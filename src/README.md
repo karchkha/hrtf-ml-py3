@@ -14,8 +14,8 @@ Tornike: this is not done yet
   2. Run any preprocessing that is needed on the datasets. The delete_samples.py in preprocessing to only keep the first 64 samples. This will save a new dataset in the hdf5 file for the specified database under trunc_64. This will force overwrite the trunc_64 dataset in the hdf5 file.
 
     ```bash
-	python delete_samples.py -t trunc_64 -n 64 cipic all -f 
-    ```
+    python delete_samples.py -t trunc_64 -n 64 cipic all -f
+	```
 
   3. In networks, main-network.py will train the network on the data. This will train the network on cipic 003 subject trunc_64 dataset and then predict using the network.
 
