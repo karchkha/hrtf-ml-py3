@@ -23,7 +23,6 @@ Tornike: this is not done yet
     python main-network.py cipic 003 -t trunc_64 -a train predict 
     ```
     
-
 ## Examples
 
   * An exmple of a plot command to plot the trunc_64 for left and right ear and put the output in file <file-name> would be
