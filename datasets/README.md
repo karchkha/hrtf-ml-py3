@@ -1,3 +1,3 @@
-# datasets
+# Datasets
 
-data fiels go here!
+data files should go here!
