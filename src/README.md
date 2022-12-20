@@ -20,7 +20,7 @@ Tornike: this is not done yet
   3. In networks, main-network.py will train the network on the data. This will train the network on cipic 003 subject trunc_64 dataset and then predict using the network.
 
     ```bash
-    python main-network.py cipic 003 -t trunc_64 -a train predict 
+    python main-network.py cipic 003 -t trunc_64 -a train predict
     ```
     
 ## Examples
