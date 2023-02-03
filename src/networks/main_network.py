@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+import pdb
+
 import sys
 sys.path.append("..")
 import time
@@ -454,7 +456,10 @@ def main():
     else:
         hrir, pos, fs, nn = read_hdf5.getData(args['db'], subjects, db_filepath=args['db_path'], ring=args['ring'], ear=args['ear'], hrir_type=args['hrir_type'], radius=None)
         
-        
+    # print (hrir.shape)
+    # print(pos[0][0]) 
+    # print (fs[0])
+    # print(nn[0][0])        
 
         
     data_manager.format_inputs_outputs(pos, hrir, nn)
@@ -462,15 +467,9 @@ def main():
     if data_manager.subj_removed:
         position_test, head_test, ear_test, magnitude_test, magnitude_raw_test, real_test, imaginary_test = data_manager.get_test_subj_data()
         
-        
-#     # print (hrir[0])
-#     # print(pos[0][0]) 
-#     # print (fs[0])
-#     # print(nn[0][0])
-#     # print (position, head, ear, magnitude, magnitude_raw, real, imaginary)
-    
-#     # print (head.getRawData())
-#     # print (head.getRawData().shape)
+    # print (position, head, ear, magnitude, magnitude_raw, real, imaginary)
+    # print (head.getRawData())
+    # print (head.getRawData().shape)
 
 
     models = OrderedDict()

@@ -24,6 +24,8 @@
 	theta: See README. Indices [0:2] are Left Ear. Indices [2:4] are Right Ear
 '''
 
+import pdb
+
 import os
 import h5py
 import glob
@@ -76,9 +78,11 @@ def getData(db, subjects, db_filepath='../datasets/', hrir_type='trunc_64', ear=
     nn_ds_loc = 'nn/' + hrir_type
     
     idx = 0
-    
+ 
     for name in subjects:
+
         try:
+
             subj = f['subject_'+name]
             cur_fs = list(subj.attrs['fs'])[0]
             cur_p = list(subj[pos_ds_loc][:])
@@ -97,14 +101,16 @@ def getData(db, subjects, db_filepath='../datasets/', hrir_type='trunc_64', ear=
             # raise ValueError('Subject Not Found %s', name)
             continue
         	
-        hrir = np.swapaxes(hrir, 1, 2)
-        hrir = np.swapaxes(hrir, 2, 3)
+    hrir = np.swapaxes(hrir, 1, 2)
+    hrir = np.swapaxes(hrir, 2, 3)
+    
     #Get appropriate ring positions based on azimuth or elevation	
     if (ring != None) or (radius != None):	
         hrir, srcpos = getRing(np.array(hrir), np.array(srcpos),ear=ear, ring_type=ring, db=db, radius=radius)
     else:
         print ("No ring specified, returning all hrir")
         
+
     if ret_subjs:
         #return hrir, srcpos, fs, subjs
         return hrir, srcpos, fs, subjs, nn

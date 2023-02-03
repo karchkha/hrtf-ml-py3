@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+import pdb
+
 # from keras.layers import Input, Dense, Activation, Dropout, Flatten, Reshape, concatenate, Lambda
 # from keras.models import Sequential, Model, model_from_json, load_model
 # from keras.callbacks import ModelCheckpoint
@@ -93,7 +95,7 @@ def format_inputs_outputs(pos, hrir, nn, ret_subjs=False):
 #    ear_norm_local[:,:,:,0] = np.divide(ear_local[:,:,:,0], LeftEar_div)
 #    ear_norm_local[:,:,:,1] = np.divide(ear_local[:,:,:,1], LeftEar_div)
 #    head_norm_local = np.divide(head_local, Head_div)
-
+    
     num_subj = np.shape(hrir_local)[0]
     test_subj_num = int(m.floor(num_subj*.1))
     subj_removed = False

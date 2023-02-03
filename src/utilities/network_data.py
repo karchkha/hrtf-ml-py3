@@ -1,4 +1,7 @@
 #! /usr/bin/python
+
+import pdb
+
 import numpy as np
 import sys
 import os
@@ -33,7 +36,7 @@ def remove_idx(data, percent_to_remove=0, num_subj=1, seed=None, pers=False):
     except: num_ear = 1
     if pers:
         num_to_remove = m.ceil(num_subj*percent_to_remove)
-        idx_to_remove = random.sample(xrange(num_subj),  int(num_to_remove))
+        idx_to_remove = random.sample(range(num_subj),  int(num_to_remove))
     else:
         num_to_remove = m.ceil(num_subj*num_pos*percent_to_remove)
         idx_to_remove = random.sample(range(num_subj*num_pos),  int(num_to_remove))
@@ -88,9 +91,16 @@ def remove_points(data, removed_idxs, pers=False):
         data_removed = data_local[removed_idxs, :]
         data_manipulated = np.delete(data_local, removed_idxs, axis=0)
     else:
+
         data_local = np.reshape(data_local, (num_subj*num_pos, num_points, -1))
         data_removed = data_local[removed_idxs, :]
         data_manipulated = np.delete(data_local, removed_idxs, axis=0)
+        
+        # print("removed_idxs",len(removed_idxs))
+        # print(data_local.shape)
+        # print(data_removed.shape)
+        # print(data_manipulated.shape,"\n")
+        
         data_removed = np.reshape(data_removed, (num_subj, -1, num_points, num_ear))
         data_manipulated = np.reshape(data_manipulated, (num_subj, -1, num_points, num_ear))
 
@@ -252,6 +262,7 @@ class Data:
         self.test_mean, self.training_valid_mean = remove_points(self.mean, self.test_idx)
         self.test_std, self.training_valid_std = remove_points(self.std, self.test_idx)
         if self.pos is not None:
+            # print("pos???")
             self.test_pos, self.training_valid_pos = remove_points(self.pos, self.test_idx)
         if navg:
             navg_test_idx = remove_idx(self.navg_data, percent_to_remove=percent, seed=seed)

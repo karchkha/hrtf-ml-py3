@@ -5,6 +5,7 @@ from tensorflow.keras.models import Sequential, Model, model_from_json, load_mod
 # from keras.callbacks import ModelCheckpoint
 from tensorflow.keras import backend as K
 # from keras.utils.generic_utils import get_custom_objects
+import tensorflow as tf
 
 # import sys, os, shutil, argparse, h5py, time
 import numpy as np
@@ -71,7 +72,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],),name='ear_inputs_real_right')
         input_layers = OrderedDict([('position',pos_input), ('head',head_input), ('ear_left',ear_input_l), ('ear_right',ear_input_r)])
         #Input data to the network, must match the number and names of input layers
-        nw_real = NetworkReal(OrderedDict([('real',real)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type)
+        nw_real = NetworkReal(OrderedDict([('real',real)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type, batch_size = batch_size)
         models_list['real'] = nw_real
 
     if ('realmean' in model_names) and ('realmean' not in models_list):
@@ -82,7 +83,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_realmean_right')
         input_layers = OrderedDict([('position',pos_input), ('head',head_input), ('ear_left',ear_input_l), ('ear_right',ear_input_r)])
         #Input data to the network, must match the number and names of input layers
-        nw_realmean = NetworkRealmean(OrderedDict([('realmean',real)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type)
+        nw_realmean = NetworkRealmean(OrderedDict([('realmean',real)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type, batch_size = batch_size)
         models_list['realmean'] = nw_realmean
 
     if ('realstd' in model_names) and ('realstd' not in models_list):
@@ -92,7 +93,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_realstd_left')
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_realstd_right')
         input_layers = OrderedDict([('position', pos_input), ('head', head_input), ('ear_left', ear_input_l), ('ear_right', ear_input_r)])
-        nw_realstd = NetworkRealstd(OrderedDict([('realstd',real)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type)
+        nw_realstd = NetworkRealstd(OrderedDict([('realstd',real)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type, batch_size = batch_size)
         models_list['realstd'] = nw_realstd
 
     if ('imag' in model_names) and ('imag' not in models_list):
@@ -102,7 +103,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_imag_left')
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_imag_right')
         input_layers = OrderedDict([('position',pos_input), ('head',head_input), ('ear_left',ear_input_l), ('ear_right',ear_input_r)])
-        nw_imag = NetworkImag(OrderedDict([('imag',imaginary)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations,epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type)
+        nw_imag = NetworkImag(OrderedDict([('imag',imaginary)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations,epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type, batch_size = batch_size)
         models_list['imag'] = nw_imag
 
     if ('imagmean' in model_names) and ('imagmean' not in models_list):
@@ -112,7 +113,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_imagmean_left')
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_imagmean_right')
         input_layers = OrderedDict([('position', pos_input), ('head', head_input), ('ear_left', ear_input_l), ('ear_right', ear_input_r)])
-        nw_imagmean = NetworkImagmean(OrderedDict([('imagmean',imaginary)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type)
+        nw_imagmean = NetworkImagmean(OrderedDict([('imagmean',imaginary)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type, batch_size = batch_size)
         models_list['imagmean'] = nw_imagmean
 
     if ('imagstd' in model_names) and ('imagstd' not in models_list):
@@ -122,7 +123,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_imagstd_left')
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_imagstd_right')
         input_layers = OrderedDict([('position', pos_input), ('head', head_input), ('ear_left', ear_input_l), ('ear_right', ear_input_r)])
-        nw_imagstd = NetworkImagstd(OrderedDict([('imagstd',imaginary)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type)
+        nw_imagstd = NetworkImagstd(OrderedDict([('imagstd',imaginary)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type, batch_size = batch_size)
         models_list['imagstd'] = nw_imagstd
 
     if ('mag' in model_names) and ('mag' not in models_list):
@@ -132,7 +133,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_mag_left')
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_mag_right')
         input_layers = OrderedDict([('position',pos_input), ('head',head_input), ('ear_left',ear_input_l), ('ear_right',ear_input_r)])
-        nw_mag = NetworkMag(OrderedDict([('mag',magnitude)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations,epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type)
+        nw_mag = NetworkMag(OrderedDict([('mag',magnitude)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations,epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type, batch_size = batch_size)
         models_list['mag'] = nw_mag
 
 
@@ -143,7 +144,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magmean_left')
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magmean_right')
         input_layers = OrderedDict([('position', pos_input), ('head', head_input), ('ear_left', ear_input_l), ('ear_right', ear_input_r)])
-        nw_magmean = NetworkMagmean(OrderedDict([('magmean',magnitude)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, run_type = run_type)
+        nw_magmean = NetworkMagmean(OrderedDict([('magmean',magnitude)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, run_type = run_type, batch_size = batch_size)
         models_list['magmean'] = nw_magmean
 
     if ('magstd' in model_names) and ('magstd' not in models_list):
@@ -153,7 +154,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magstd_left')
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magstd_right')
         input_layers = OrderedDict([('position', pos_input), ('head', head_input), ('ear_left', ear_input_l), ('ear_right', ear_input_r)])
-        nw_magstd = NetworkMagstd(OrderedDict([('magstd',magnitude)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, run_type = run_type)
+        nw_magstd = NetworkMagstd(OrderedDict([('magstd',magnitude)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, run_type = run_type, batch_size = batch_size)
         models_list['magstd'] = nw_magstd
 
     if ('magraw' in model_names) and ('magraw' not in models_list):
@@ -163,7 +164,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magraw_left')
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magraw_right')
         input_layers = OrderedDict([('position',pos_input), ('head',head_input), ('ear_left',ear_input_l), ('ear_right',ear_input_r)])
-        nw_magraw = NetworkMagraw(OrderedDict([('magraw',magnitude_raw)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations,epochs=epochs, init_valid_seed=validation_seed, run_type = run_type)
+        nw_magraw = NetworkMagraw(OrderedDict([('magraw',magnitude_raw)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations,epochs=epochs, init_valid_seed=validation_seed, run_type = run_type, batch_size = batch_size)
         models_list['magraw'] = nw_magraw
 
     if ('magl' in model_names) and ('magl' not in models_list):
@@ -172,7 +173,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         head_input = Input(shape=(np.shape(head.getTrainingData())[NUMPOINTS_DIM],), name='head_inputs_magl')
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magl_left')
         input_layers = OrderedDict([('position',pos_input), ('head',head_input), ('ear_left',ear_input_l)])
-        nw_magl = NetworkMagL(OrderedDict([('magl',magnitude_raw), ('maglmean', magnitude_raw), ('maglstd', magnitude_raw)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=maglr_iterations,epochs=maglr_epochs, init_valid_seed=validation_seed, run_type = run_type)
+        nw_magl = NetworkMagL(OrderedDict([('magl',magnitude_raw), ('maglmean', magnitude_raw), ('maglstd', magnitude_raw)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=maglr_iterations,epochs=maglr_epochs, init_valid_seed=validation_seed, run_type = run_type, batch_size = batch_size)
         models_list['magl'] = nw_magl
 
     if ('magmeanl' in model_names) and ('magmeanl' not in models_list):
@@ -182,7 +183,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         head_input = Input(shape=(np.shape(head.getTrainingData())[NUMPOINTS_DIM],), name='head_inputs_magmeanl')
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magmeanl_left')
         input_layers = OrderedDict([('position',pos_input), ('head',head_input), ('ear_left',ear_input_l)])
-        nw_magmeanl = NetworkMagmeanL(OrderedDict([('magmeanl',magnitude)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=maglr_iterations,epochs=maglr_epochs, init_valid_seed=validation_seed, run_type = run_type)
+        nw_magmeanl = NetworkMagmeanL(OrderedDict([('magmeanl',magnitude)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=maglr_iterations,epochs=maglr_epochs, init_valid_seed=validation_seed, run_type = run_type, batch_size = batch_size)
         models_list['magmeanl'] = nw_magmeanl
 
     if ('magstdl' in model_names) and ('magstdl' not in models_list):
@@ -192,7 +193,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         head_input = Input(shape=(np.shape(head.getTrainingData())[NUMPOINTS_DIM],), name='head_inputs_magstdl')
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magstdl_left')
         input_layers = OrderedDict([('position',pos_input), ('head',head_input), ('ear_left',ear_input_l)])
-        nw_magstdl = NetworkMagstdL(OrderedDict([('magstdl',magnitude)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=maglr_iterations,epochs=maglr_epochs, init_valid_seed=validation_seed, run_type = run_type)
+        nw_magstdl = NetworkMagstdL(OrderedDict([('magstdl',magnitude)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=maglr_iterations,epochs=maglr_epochs, init_valid_seed=validation_seed, run_type = run_type, batch_size = batch_size)
         models_list['magstdl'] = nw_magstdl
 
     if ('magr' in model_names) and ('magr' not in models_list):
@@ -201,7 +202,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         head_input = Input(shape=(np.shape(head.getTrainingData())[NUMPOINTS_DIM],), name='head_inputs_magr')
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magr_right')
         input_layers = OrderedDict([('position',pos_input), ('head',head_input), ('ear_right',ear_input_l)])
-        nw_magr = NetworkMagR(OrderedDict([('magr',magnitude_raw), ('magrmean', magnitude_raw), ('magrstd', magnitude_raw)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=maglr_iterations,epochs=maglr_epochs, init_valid_seed=validation_seed, run_type = run_type)
+        nw_magr = NetworkMagR(OrderedDict([('magr',magnitude_raw), ('magrmean', magnitude_raw), ('magrstd', magnitude_raw)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=maglr_iterations,epochs=maglr_epochs, init_valid_seed=validation_seed, run_type = run_type, batch_size = batch_size)
         models_list['magr'] = nw_magr
 
     if ('magmeanr' in model_names) and ('magmeanr' not in models_list):
@@ -211,7 +212,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         head_input = Input(shape=(np.shape(head.getTrainingData())[NUMPOINTS_DIM],), name='head_inputs_magmeanr')
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magmeanr_right')
         input_layers = OrderedDict([('position',pos_input), ('head',head_input), ('ear_right',ear_input_l)])
-        nw_magmeanr = NetworkMagmeanR(OrderedDict([('magmeanr',magnitude)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=maglr_iterations,epochs=maglr_epochs, init_valid_seed=validation_seed, run_type = run_type)
+        nw_magmeanr = NetworkMagmeanR(OrderedDict([('magmeanr',magnitude)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=maglr_iterations,epochs=maglr_epochs, init_valid_seed=validation_seed, run_type = run_type, batch_size = batch_size)
         models_list['magmeanr'] = nw_magmeanr
 
     if ('magstdr' in model_names) and ('magstdr' not in models_list):
@@ -221,7 +222,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         head_input = Input(shape=(np.shape(head.getTrainingData())[NUMPOINTS_DIM],), name='head_inputs_magstdr')
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magstdr_right')
         input_layers = OrderedDict([('position',pos_input), ('head',head_input), ('ear_right',ear_input_l)])
-        nw_magstdr = NetworkMagstdR(OrderedDict([('magstdr',magnitude)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=maglr_iterations,epochs=maglr_epochs, init_valid_seed=validation_seed, run_type = run_type)
+        nw_magstdr = NetworkMagstdR(OrderedDict([('magstdr',magnitude)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=maglr_iterations,epochs=maglr_epochs, init_valid_seed=validation_seed, run_type = run_type, batch_size = batch_size)
         models_list['magstdr'] = nw_magstdr
 
     if ('magri' in model_names) and ('magri' not in models_list):
@@ -233,7 +234,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magri_right')
         input_layers = OrderedDict([('position', pos_input), ('head', head_input), ('ear_left', ear_input_l), ('ear_right', ear_input_r)])
         # TODO - As we do not normalize the data any more (but in cost functions) magnitude and magnitude_raw are the same
-        nw_magri = NetworkMagRI(OrderedDict([('magri', magnitude_raw), ('magrimean', magnitude), ('magristd', magnitude), ('magrinorm', magnitude)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type)
+        nw_magri = NetworkMagRI(OrderedDict([('magri', magnitude_raw), ('magrimean', magnitude), ('magristd', magnitude), ('magrinorm', magnitude)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type, batch_size = batch_size)
         models_list['magri'] = nw_magri
 
     if ('magfinal' in model_names) and ('magfinal' not in models_list):
@@ -244,7 +245,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magfinal_left')
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magfinal_right')
         input_layers = OrderedDict([('position', pos_input), ('head', head_input), ('ear_left', ear_input_l), ('ear_right', ear_input_r)])
-        nw_magfinal = NetworkMagFinal(OrderedDict([('magfinal', magnitude)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed,  created_by = created_by, run_type = run_type)
+        nw_magfinal = NetworkMagFinal(OrderedDict([('magfinal', magnitude)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed,  created_by = created_by, run_type = run_type, batch_size = batch_size)
         models_list['magfinal'] = nw_magfinal
 
     if ('magrecon' in model_names) and ('magrecon' not in models_list):
@@ -255,7 +256,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magrecon_left')
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magrecon_right')
         input_layers = OrderedDict([('position', pos_input), ('head', head_input), ('ear_left', ear_input_l), ('ear_right', ear_input_r)])
-        nw_magrecon = NetworkMagRecon(OrderedDict([('magrecon', magnitude_raw)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, run_type = run_type)
+        nw_magrecon = NetworkMagRecon(OrderedDict([('magrecon', magnitude_raw)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, run_type = run_type, batch_size = batch_size)
         models_list['magrecon'] = nw_magrecon
 
     if ('magreconl' in model_names) and ('magreconl' not in models_list):
@@ -266,7 +267,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magreconl_left')
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magreconl_right')
         input_layers = OrderedDict([('position', pos_input), ('head', head_input), ('ear_left', ear_input_l), ('ear_right', ear_input_r)])
-        nw_magreconl = NetworkMagReconL(OrderedDict([('magreconl', magnitude_raw)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, run_type = run_type)
+        nw_magreconl = NetworkMagReconL(OrderedDict([('magreconl', magnitude_raw)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, run_type = run_type, batch_size = batch_size)
         models_list['magreconl'] = nw_magreconl
 
     if ('magreconr' in model_names) and ('magreconr' not in models_list):
@@ -277,7 +278,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magreconr_left')
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magreconr_right')
         input_layers = OrderedDict([('position', pos_input), ('head', head_input), ('ear_left', ear_input_l), ('ear_right', ear_input_r)])
-        nw_magreconr = NetworkMagReconR(OrderedDict([('magreconr', magnitude_raw)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, run_type = run_type)
+        nw_magreconr = NetworkMagReconR(OrderedDict([('magreconr', magnitude_raw)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, run_type = run_type, batch_size = batch_size)
         models_list['magreconr'] = nw_magreconr
 
     if ('magtotal' in model_names) and ('magtotal' not in models_list):
@@ -289,7 +290,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_magtotal_right')
         input_layers = OrderedDict([('position', pos_input), ('head', head_input), ('ear_left', ear_input_l), ('ear_right', ear_input_r)])
         #nw_magtotal = NetworkMagTotal(OrderedDict([('magtotal', magnitude_raw), ('magtotalmean', magnitude_raw), ('magtotalstd', magnitude_raw), ('magtotalnorm', magnitude)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed)
-        nw_magtotal = NetworkMagTotal(OrderedDict([('magtotal', magnitude_raw), ('magtotalmean', magnitude_raw), ('magtotalstd', magnitude_raw)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, run_type = run_type)
+        nw_magtotal = NetworkMagTotal(OrderedDict([('magtotal', magnitude_raw), ('magtotalmean', magnitude_raw), ('magtotalstd', magnitude_raw)]), input_data, input_layers, input_networks=in_networks, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations, epochs=epochs, init_valid_seed=validation_seed, run_type = run_type, batch_size = batch_size)
         models_list['magtotal'] = nw_magtotal
     return models_list
 
@@ -331,13 +332,13 @@ def get_data_from_model(model, model_name, input_data, subtract_data=None):
     return new_data
 
 def get_left_layer(layer):
-    return K.identity(layer[0])
+    return tf.identity(layer[0])
 
 def get_right_layer(layer):
-    return K.identity(layer[1])
+    return tf.identity(layer[1])
 
 def get_layer(layer):
-    return K.identity(layer)
+    return tf.identity(layer)
 
 def get_model(models):
     input_data = OrderedDict([('position',position), ('head', head), ('ear_left', ear), ('ear_right', ear)])

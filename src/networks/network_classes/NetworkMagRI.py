@@ -46,6 +46,7 @@ class NetworkMagRI(Network):
                 batch_size=batch_size,
                 init_valid_seed=init_valid_seed,
                 loss_function=globalvars.custom_loss_normalized)
+            print("if here means that constructed ")
         except Exception as err:
             if isinstance(input_networks, dict):
                 self.input_networks = input_networks
@@ -68,10 +69,10 @@ class NetworkMagRI(Network):
         
     def load_external_model(self, network_name):
         
-        print ('Loading dependency ' + network_name)
+        print ('\nLoading dependency ' + network_name)
         
         models = OrderedDict()
-        models = network_manager.make_models(network_name, models, created_by = self.created_by + "_magri")
+        models = network_manager.make_models(network_name, models, created_by = self.created_by + "_magri", run_type=self.run_type)
         self.input_networks[network_name] = models[network_name]
 
         # print ('./kmodels/'+self.model_details+'_'+network_name +'.h5')

@@ -101,7 +101,7 @@ class NetworkMagTotal(Network):
                 iterations=iterations, 
                 batch_size=batch_size,
                 init_valid_seed=init_valid_seed,
-                loss_function=loss_functions)
+                loss_function=loss_functions) # globalvars.custom_loss_magtotal) #
 
     def load_external_model(self, network_name):
         

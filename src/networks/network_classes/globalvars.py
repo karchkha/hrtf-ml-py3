@@ -1,3 +1,5 @@
+import pdb
+
 import tensorflow.keras.layers as kl
 import tensorflow.keras.initializers as ki
 from tensorflow.keras import backend as K
@@ -62,6 +64,16 @@ def ri_to_mag(ri):
     ri_2 = K.sum(ri, axis=0)
     magri_out = K.sqrt(ri_2)
     return magri_out
+
+# def ri_to_mag(ri):
+#     r = kl.add([kl.multiply([ri[0], ri[2]]), ri[1]])
+#     i = kl.add([kl.multiply([ri[3], ri[5]]), ri[4]])
+#     ri = [r, i]
+#     ri = K.pow(ri, 2)
+#     ri_2 = K.sum(ri, axis=0)
+#     magri_out = K.sqrt(ri_2)
+#     return magri_out
+
 
 def mag_to_magmean(x):
     magri_mean = K.mean(x, axis=1, keepdims=True)
@@ -239,17 +251,23 @@ def custom_loss_renormalize(y, yhat):
 
 def custom_loss_magtotal(y, yhat):
     if isinstance(y, tf.Tensor):
+        
+        pdb.set_trace()
+        
         y_mean = K.mean(y, axis=1, keepdims=True)
         y_zeromean = y - y_mean
         y_std = K.var(y_zeromean, axis=1, keepdims=True)**(1.0/2.0)
         y_pow = K.var(y, axis=1, keepdims=True)
+        # y_norm = tf.math.divide(y_zeromean, y_std)
         y_norm = np.divide(y_zeromean, y_std)
         
         yhat_mean = K.mean(yhat, axis=1, keepdims=True)
         yhat_zeromean = yhat - yhat_mean
         yhat_std = K.var(yhat_zeromean, axis=1, keepdims=True)**(1.0/2.0)
         yhat_pow = K.var(yhat, axis=1, keepdims=True)
+        # yhat_norm = tf.math.divide(yhat_zeromean, yhat_std)
         yhat_norm = np.divide(yhat_zeromean, yhat_std)
+    
     elif isinstance(y, np.ndarray):
         y_mean = np.mean(y, axis=1, keepdims=True)
         y_zeromean = y - y_mean

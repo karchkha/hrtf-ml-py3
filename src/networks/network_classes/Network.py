@@ -134,7 +134,7 @@ class Network(object):
             self.make_model()
             plot_model(self.model, to_file=self.graphpath)
             self.trained = False
-            
+            print("Starting model ", self.model_name, " weights from scratch")
 
 
     def compile_model(self):
