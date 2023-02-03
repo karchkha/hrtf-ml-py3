@@ -252,7 +252,7 @@ def custom_loss_renormalize(y, yhat):
 def custom_loss_magtotal(y, yhat):
     if isinstance(y, tf.Tensor):
         
-        pdb.set_trace()
+        # pdb.set_trace()
         
         y_mean = K.mean(y, axis=1, keepdims=True)
         y_zeromean = y - y_mean
