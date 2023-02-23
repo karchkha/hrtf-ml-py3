@@ -108,7 +108,7 @@ class Network(object):
 
         self.load_model()
         self.compile_model()
-        # self.load_weights()
+        self.load_weights()
         
 
     def load_model(self):
@@ -124,7 +124,7 @@ class Network(object):
         if os.path.isfile(self.modelpath):
             if self.run_type =="train":
                 self.make_model()
-                self.load_weights()
+                #self.load_weights()
                 self.trained = False
             else:
                 print ("Loading " + self.model_name + ": " + self.modelpath)
@@ -140,11 +140,13 @@ class Network(object):
     def compile_model(self):
         if not self.trained:
             print ("Compiling model")
+            optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)     # default was 0.001
+            #optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)     # default was 0.001
             try:
                 self.loss_weights
-                self.model.compile(optimizer='adam', loss=self.loss_function, loss_weights=self.loss_weights)
+                self.model.compile(optimizer=optimizer, loss=self.loss_function, loss_weights=self.loss_weights)
             except:
-                self.model.compile(optimizer='adam', loss=self.loss_function)
+                self.model.compile(optimizer=optimizer, loss=self.loss_function)
 
     def load_weights(self):
         if os.path.isfile(self.weightspath):

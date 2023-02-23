@@ -84,7 +84,10 @@ def mag_to_magstd(x):
     return magri_std
 
 def recalc(x):
+
+    #mag = tf.math.add(tf.math.multiply(x[0],x[2]),x[1])
     mag = (x[0]*x[2])+x[1]
+
     return mag
 
 def mag_to_db(x):
@@ -100,11 +103,13 @@ def positive(x):
     return K.abs(x)
 
 def mean(x):
-    out_mean = K.mean(x, axis=1, keepdims=True)
+    #out_mean = K.mean(x, axis=1, keepdims=True)
+    out_mean = tf.math.reduce_mean(x, axis=1, keepdims=True)
     return out_mean
 
 def std(x):
-    out_std = K.std(x, axis=1, keepdims=True)
+    #out_std = K.std(x, axis=1, keepdims=True)
+    out_std = tf.math.reduce_std(x, axis=1, keepdims=True)
     return out_std
 
 def norm(x):

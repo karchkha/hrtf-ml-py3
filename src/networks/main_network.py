@@ -2,6 +2,9 @@
 
 import pdb
 
+from ftplib import all_errors
+import pdb
+
 import sys
 sys.path.append("..")
 import time
@@ -65,15 +68,19 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
         num_cols_per_dist = int(num_cols/num_dists)
         zero_idxs = np.concatenate([np.arange(8, num_rows*num_cols, 50), np.arange(num_rows*num_cols-10, 39, -50)])
         frac = .05
+    
     normalize = matplotlib.colors.Normalize(vmin=0, vmax=7)
     left_right = [True, True]
     pos_inputs = inputs['position']
+    #print(pos_inputs.shape)
+
     head_inputs = inputs['head']
     ear_inputs = inputs['ear']
     zeroazi_plot_pos = []
     zeroazi_plot_pos_cart = []
     for name in names:
         print ("Getting all LSD for " + name)
+        #print(all_models)
         model = all_models[name]
         outputs = all_outputs[name]
         lsds_l_11k_test = []
@@ -89,6 +96,8 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
         high_idxs_l = {}
         high_idxs_r = {}
         thresh = 5.0
+
+  
         for i in range(0, num_cols):
             for j in range(0, num_rows):
                 idx = i*num_rows + j
@@ -105,7 +114,10 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                     curr_pred_data = pred_data[0]
                     left_right = [False, True]
                 else:
+                
                     curr_pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l, curr_input_ear_r], verbose=0)
+            
+       
                 if left_right[0]:
                     lsds_l[j, i] = lsd(outputs[idx,:,0], curr_pred_data[0])
                     lsds_l_11k[j, i] = lsd(outputs[idx,:,0], curr_pred_data[0], 18)
@@ -121,15 +133,25 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                     lsds_r_11k[j, i] = lsd(outputs[idx,:,1], curr_pred_data[0], 18)
                     if (lsds_r[j, i] > thresh):
                         high_idxs_r[idx] = lsds_r[j,i]
+
                 if idx in test_idxs:
-                    lsds_l_test.append(lsd(outputs[idx,:,0], curr_pred_data[0]))
-                    lsds_l_11k_test.append(lsd(outputs[idx,:,0], curr_pred_data[0], 18))
-                    lsds_r_test.append(lsd(outputs[idx,:,1], curr_pred_data[1]))
-                    lsds_r_11k_test.append(lsd(outputs[idx,:,1], curr_pred_data[1], 18))
+                    if name  in ['magl']:
+                        lsds_l_test.append(lsd(outputs[idx,:,0], curr_pred_data[0]))
+                        lsds_l_11k_test.append(lsd(outputs[idx,:,0], curr_pred_data[0], 18))
+                    elif name in ['magr']:
+                        lsds_r_test.append(lsd(outputs[idx,:,1], curr_pred_data[0]))
+                        lsds_r_11k_test.append(lsd(outputs[idx,:,1], curr_pred_data[0], 18))
+                    else:
+                        lsds_l_test.append(lsd(outputs[idx,:,0], curr_pred_data[0]))
+                        lsds_l_11k_test.append(lsd(outputs[idx,:,0], curr_pred_data[0], 18))                    
+                        lsds_r_test.append(lsd(outputs[idx,:,1], curr_pred_data[1]))
+                        lsds_r_11k_test.append(lsd(outputs[idx,:,1], curr_pred_data[1], 18))
+    
+    
         #fig_lsdall_l = plt.figure()
         #fig_lsdall_l_11k = plt.figure()
         #fig_lsdall_r = plt.figure()
-        #fig_lsdall_r_11k = plt.figure()
+        #fig_lsdall_r_11k = plt.figure()          
         if args['db'] == 'scut':
             fig_lsdall_l, axes_l = plt.subplots(nrows=2, ncols=1)
             fig_lsdall_r, axes_r = plt.subplots(nrows=2, ncols=1)
@@ -141,6 +163,11 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
             fig_lsd0l = plt.figure()
             fig_lsd0r= plt.figure()
 
+
+        fig_lsdall_l.suptitle(name+" left ear", fontsize=16)
+        fig_lsdall_r.suptitle(name+" right ear", fontsize=16)
+
+
         if args['db'] == 'cipic':
             curr_zero_azi = np.squeeze(cart2sph(np.array(pos_inputs[zero_idxs])))
             zeroazi_plot_pos = [int(pos[0]) for pos in curr_zero_azi]
@@ -149,21 +176,53 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
             curr_input_head = np.array(head_inputs[zero_idxs])
             curr_input_ear_l = np.expand_dims(np.array(ear_inputs[zero_idxs,:,0]), axis=0)
             curr_input_ear_r = np.expand_dims(np.array(ear_inputs[zero_idxs,:,1]), axis=0)
-            curr_pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_l), np.squeeze(curr_input_ear_r)])
+
+        
             lsds_l_1d = []
             lsds_l_1d_11k = []
             lsds_r_1d = []
             lsds_r_1d_11k = []
-            pred_l = curr_pred_data[0]
-            pred_r = curr_pred_data[1]
-            for (i, (idx, pred)) in enumerate(zip(zero_idxs, pred_l)):
-                lsds_l_1d.append(lsd(outputs[idx,:,0], pred))
-                lsds_l_1d_11k.append(lsd(outputs[idx,:,0], pred,18))
-            for (i, (idx, pred)) in enumerate(zip(zero_idxs, pred_r)):
-                lsds_r_1d.append(lsd(outputs[idx,:,1], pred))
-                lsds_r_1d_11k.append(lsd(outputs[idx,:,1], pred,18))
+
+    #         curr_pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_l), np.squeeze(curr_input_ear_r)])
+            if name  in ['magl']:
+                pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_l)], verbose=0)
+                curr_pred_data = pred_data#[0]
+                left_right = [True, False]
+                pred_l = curr_pred_data[0]
+    #             pred_r = np.random.rand(curr_pred_data[0].shape[0],curr_pred_data[0].shape[1])
+                for (i, (idx, pred)) in enumerate(zip(zero_idxs, pred_l)):
+                    lsds_l_1d.append(lsd(outputs[idx,:,0], pred))
+                    lsds_l_1d_11k.append(lsd(outputs[idx,:,0], pred,18))
+
+            elif name in ['magr']:
+                pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_r)], verbose=0)
+                curr_pred_data = pred_data#[0]
+                left_right = [False, True]
+    #             pred_l = curr_pred_data[0]
+                pred_r = curr_pred_data[0]
+                for (i, (idx, pred)) in enumerate(zip(zero_idxs, pred_r)):
+                    lsds_r_1d.append(lsd(outputs[idx,:,1], pred))
+                    lsds_r_1d_11k.append(lsd(outputs[idx,:,1], pred,18))            
+        
+            else:
+
+                curr_pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_l), np.squeeze(curr_input_ear_r)], verbose=0)
+        
+                pred_l = curr_pred_data[0]
+                pred_r = curr_pred_data[1]            
+
+                for (i, (idx, pred)) in enumerate(zip(zero_idxs, pred_l)):
+                    lsds_l_1d.append(lsd(outputs[idx,:,0], pred))
+                    lsds_l_1d_11k.append(lsd(outputs[idx,:,0], pred,18))
+                for (i, (idx, pred)) in enumerate(zip(zero_idxs, pred_r)):
+                    lsds_r_1d.append(lsd(outputs[idx,:,1], pred))
+                    lsds_r_1d_11k.append(lsd(outputs[idx,:,1], pred,18))
+        
+        
             ticks=[0,   3,  5,  7,  8,  9, 10, 11, 12, 13, 14, 15,16,17,  18,  19,  20,  21,  22,  23,  24,  25,  27,  29,  32,  33,  36,  38,  40,  41,  42,  43,  44,  45,  46,  47, 48,49,50, 51, 52, 53, 54, 55, 56, 57, 58, 60, 62, 65]
                  #[80, 65, 55, 45, 40, 35, 30, 25, 20, 15, 10, 5, 0, -5, -10, -15, -20, -25, -30, -35, -40, -45, -55, -65, -80, -80, -65, -55, -45, -40, -35, -30, -25, -20, -15, -10, -5, 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 55, 65, 80]
+        
+        #print(lsds_l)
 
         if left_right[0]:
             axl = axes_l[0]
@@ -204,13 +263,13 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
             lsds_l_11k_avg = []
             lsds_l_test_avg = []
             lsds_l_11k_test_avg = []
-            
+
             for i in range(num_dists):
                 lsds_l_avg.append(np.mean(np.mean(lsds_l[:,i*num_cols_per_dist:(i+1)*num_cols_per_dist])))
                 lsds_l_11k_avg.append(np.mean(np.mean(lsds_l_11k[:,i*num_cols_per_dist:(i+1)*num_cols_per_dist]))) #            axl.set_title('Full Bandwidth LSD')
                 lsds_l_test_avg.append(np.mean(lsds_l_test[:])) #            axl.set_title('Full Bandwidth LSD')
                 lsds_l_11k_test_avg.append(np.mean(lsds_l_11k_test[:])) #            axl.set_title('Full Bandwidth LSD')
-#            axl_11k.set_title('<11k LSD')
+    #            axl_11k.set_title('<11k LSD')
             print ("Left " + name + " [full, <11k]: [" + str(lsds_l_avg) + ", "+ str(lsds_l_11k_avg) + "]")
             print ("Left " + name + " test [full, <11k]: [" + str(lsds_l_test_avg) + ", "+ str(lsds_l_11k_test_avg) + "]")
 
@@ -228,7 +287,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 axl0.set_xlabel("Azimuthal Angle (deg)")
                 axl0.set_ylabel("Log Spectral Distortion (dB)")
                 axl0.set_title("Left Ear Spectral Distortion")
-            
+
         if left_right[1]:
             axr = axes_r[0]
             caxr = axr.imshow(lsds_r, cmap='jet', norm=normalize)
@@ -260,10 +319,10 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 axr_11k.set_xticks([0, 12, 24])
                 axr_11k.set_xticklabels([80, 0, -80])
                 axr_11k.set_xlabel("Azimuthal Angle (deg)")
-#                axr_11k.set_ylabel("Elevation Angle (deg)")
+    #                axr_11k.set_ylabel("Elevation Angle (deg)")
             fig_lsdall_r.savefig("./figures/lsdall_r" + args['db'] + ".eps",bbox_inches='tight')
-#            axr.set_title(name + ' Right Ear Full LSD')
-#            axr_11k.set_title(name + ' Right Ear <11k LSD')
+    #            axr.set_title(name + ' Right Ear Full LSD')
+    #            axr_11k.set_title(name + ' Right Ear <11k LSD')
             #lsds_r_avg = np.mean(np.mean(lsds_r))
             #lsds_r_11k_avg = np.mean(np.mean(lsds_r_11k))
             lsds_r_avg = []
@@ -293,7 +352,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 axr0.set_ylabel("Log Spectral Distortion (dB)")
                 axr0.set_title("Right Ear Spectral Distortion")
     plt.show()
-    plt.close()
+    #plt.close()
 
 def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44.1, lsd_only=False):
     #Bar graph settings for mean and std
@@ -674,50 +733,29 @@ def main():
             print ("Not enough subjects were available to remove some for test")
             pass
 
-        # inputs = inputs_train
-        # outputs = outputs_train
-        # curr_pred_data_list = OrderedDict()
+        inputs = inputs_train
+        outputs = outputs_train
+        curr_pred_data_list = OrderedDict()
 
-        # #setup the figure
-        # fig = plt.figure()
-        # axsl = []
-        # axsr = []
-        # plt.ion()
-        # num_plot_rows = len(models_to_predict)
-        # num_plot_cols = 2 #2 ears
-        # tmp_list = []
-        # for i, model_name in enumerate(models_to_predict):
-        #     axsl.append(fig.add_subplot(num_plot_rows,num_plot_cols,(2*i)+1))
-        #     axsr.append(fig.add_subplot(num_plot_rows,num_plot_cols,(2*i)+2))
-        #     curr_pred_data_list[model_name] = None
-        # fig.canvas.draw()
-        # plt.show()
+        #setup the figure
+        fig = plt.figure()
+        axsl = []
+        axsr = []
+        plt.ion()
+        num_plot_rows = len(models_to_predict)
+        num_plot_cols = 2 #2 ears
+        tmp_list = []
+        for i, model_name in enumerate(models_to_predict):
+            axsl.append(fig.add_subplot(num_plot_rows,num_plot_cols,(2*i)+1))
+            axsr.append(fig.add_subplot(num_plot_rows,num_plot_cols,(2*i)+2))
+            curr_pred_data_list[model_name] = None
+        fig.canvas.draw()
+        plt.show()
 
         curr_idx = 0
         #print test_inds_sorted
         while(True):
-            inputs = inputs_train
-            outputs = outputs_train
-            curr_pred_data_list = OrderedDict()
-                
-            #setup the figure
-            fig = plt.figure()
-            axsl = []
-            axsr = []
-            plt.ion()
-            num_plot_rows = len(models_to_predict)
-            num_plot_cols = 2 #2 ears
-            tmp_list = []
-            
-            # print(curr_pred_data_list)
-            for i, model_name in enumerate(models_to_predict):
-                axsl.append(fig.add_subplot(num_plot_rows,num_plot_cols,(2*i)+1))
-                axsr.append(fig.add_subplot(num_plot_rows,num_plot_cols,(2*i)+2))
-                curr_pred_data_list[model_name] = None
-            # plt.show()            
-            
-            # print(curr_pred_data_list)
-            
+           
             #take in prediction index 1 and 2
             pred_nums = input("Prediction Indices: ")
             if (test_available) and ('ts' in pred_nums):
@@ -734,7 +772,7 @@ def main():
                 inputs = inputs_train
                 outputs = outputs_train
             if 'lsd' in pred_nums:
-                predict_all_lsd(models, inputs, outputs, names=['magtotal'], args=args, test_idxs=magnitude.getTestIdx())#, 'magl', 'magr'])
+                predict_all_lsd(models, inputs, outputs, names=models_to_predict, args=args, test_idxs=magnitude.getTestIdx())#, ['magtotal']'magl', 'magr']) models_to_analyze
                 continue;
             for ax in axsl:
                 ax.clear()
@@ -766,7 +804,7 @@ def main():
                 axsr[i].grid(True)
 
             plt.show()
-            plt.close()
+            #plt.close()
         
 
 if __name__ == '__main__':

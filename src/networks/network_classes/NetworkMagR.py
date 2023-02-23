@@ -51,7 +51,7 @@ class NetworkMagR(Network):
             loss_function=loss_functions)
 
     def make_model(self):
-        init_seed = 100
+        init_seed = init_seed = np.random.randint(0,200,1)[0] #100
         num_out_neurons = np.shape(self.data[self.model_name].getTrainingData())[1]
         main_input = concatenate([self.input_layers['position'], self.input_layers['head']], axis=1)
         layert = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed), activation=globalvars.custom_activation_maglr, name=self.model_name+'_hidden1_r')(main_input)

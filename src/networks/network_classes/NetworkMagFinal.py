@@ -138,7 +138,8 @@ class NetworkMagFinal(Network):
                 if isinstance(l, Dense): #if isinstance(l, kl.core.Dense):
                     if (i < 14):
                         layer = list(reversed(self.model.layers))[i]
-                        print (layer)
+                        print ("magfinal layer:", layer, "weight are set to mag layer:", l, "weights")
+
                         layer.set_weights(l.get_weights())
                 elif isinstance(l, kl.InputLayer): #elif isinstance(l, ke.topology.InputLayer):
                     i = i-1
