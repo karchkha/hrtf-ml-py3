@@ -359,7 +359,8 @@ def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44
     width = 0.35
     #Get the position and anthro data for prediction
     if idx > np.shape(list(outputs.values())[0])[0]:
-        print ("Index to large for this data. Must less than %d" % np.shape(outputs.values())[1])
+#         print ("Index to large for this data. Must less than %d" % np.shape(outputs.values())[1])
+        print ("Index to large for this data. Must less than %d" % np.shape(list(outputs.values())[0])[1])
         return
     pos_inputs = inputs['position']
     head_inputs = inputs['head']
@@ -484,12 +485,6 @@ def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44
     if lsd_only:
         return lsd_dict
     return curr_input_pos.T
-
-
-
-
-
-
 
 
 def main():
@@ -772,6 +767,14 @@ def main():
                 inputs = inputs_train
                 outputs = outputs_train
             if 'lsd' in pred_nums:
+                
+#                 print(inputs["head"].shape)
+#                 for key in inputs.keys():
+#                     inputs_new[key] = inputs[key][2500:]
+#                 for key in outputs.keys():
+#                     outputs_new[key] = outputs[key][2500:]
+#                 print(inputs["head"].shape)   
+                                
                 predict_all_lsd(models, inputs, outputs, names=models_to_predict, args=args, test_idxs=magnitude.getTestIdx())#, ['magtotal']'magl', 'magr']) models_to_analyze
                 continue;
             for ax in axsl:

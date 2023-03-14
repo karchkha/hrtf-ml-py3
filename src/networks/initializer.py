@@ -21,7 +21,7 @@ def parseargs():
 
     #parser.add_argument("-f", "--fff", help="a dummy argument to fool ipython", default="1")
     #parser.add_argument('-db',type=str, default='cipic', help='URL to downnload from')    
-    #parser.add_argument('-subjects', type=str, nargs='+', default=['003'], help='Subject number')
+    #parser.add_argument('-subjects', type=str, nargs='+', default=['all'], help='Subject number')
 
     parser.add_argument('db',type=str, help='URL to downnload from')    
     parser.add_argument('subjects', type=str, nargs='+', help='Subject number')
