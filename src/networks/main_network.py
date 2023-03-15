@@ -143,24 +143,24 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 length = 32
                 if name  in ['magl']:
                     model = all_models[name]
-                    pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l])
+                    pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l], verbose=0)
                     curr_pred_data = pred_data[0]
                     left_right = [True, False]
                 elif name  in ['maglmean']:
                     # The code for maglmean is not completed - as the input needs to be adjusted as well
                     model = all_models['magl']
-                    pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l])
+                    pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l], verbose=0)
                     curr_pred_data = pred_data[1]
                     left_right = [True, False]
                     lsd_0_azi = False
                 elif name in ['magr']:
                     model = all_models[name]
-                    pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_r])
+                    pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_r], verbose=0)
                     curr_pred_data = pred_data[0]
                     left_right = [False, True]
                 else:
                     model = all_models[name]
-                    curr_pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l, curr_input_ear_r])
+                    curr_pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l, curr_input_ear_r], verbose=0)
                     left_right = [True, True]
                 if left_right[0]:
                     lsds_l[j, i] = lsd(outputs[idx,:,0], curr_pred_data[0])
