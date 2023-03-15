@@ -16,10 +16,10 @@ import numpy as np
 import math as m
 
 from utilities.parameters import *
+
 import initializer
 import data_manager
 import network_manager
-
 
 def cart2sph(pos):
     pos_sph = np.array(np.squeeze(pos))
@@ -520,7 +520,11 @@ def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44
     return curr_input_pos.T
 
 
+
+
 def main():
+
+
 
     initializer.parseargs()
     initializer.init()
@@ -534,15 +538,27 @@ def main():
     model_details = initializer.model_details
     model_details_prev = initializer.model_details_prev
 
-    if (args['train_only'] is not None):
-        models_to_train_1 = [ args['train_only']]
-        models_to_train_2 = []
-        models_to_train_3 = []
-        models_to_train_4 = []
-        models_to_predict= models_to_train_1
-        models_to_eval = models_to_predict
-        finals = models_to_predict
-    
+    print(args['train_only'])
+
+
+    ##### this is got creating local variables so we can use them lately otherwise this doen't work due to py2 to py3 conversion. 
+    models_to_train_1_loc = models_to_train_1
+    models_to_train_2_loc = models_to_train_2
+    models_to_train_3_loc = models_to_train_3
+    models_to_train_4_loc = models_to_train_4
+    models_to_predict_loc = models_to_predict
+    models_to_eval_loc = models_to_eval
+    finals_loc = finals
+
+    if args['train_only'] is not None:
+        models_to_train_1_loc = [ args['train_only']]
+        models_to_train_2_loc = []
+        models_to_train_3_loc = []
+        models_to_train_4_loc = []
+        models_to_predict_loc = models_to_train_1_loc
+        models_to_eval_loc = models_to_predict_loc
+        finals_loc = models_to_predict_loc
+
     #Read and format the data
     C_hrir= None
     if args['db'] == 'scut':
@@ -563,13 +579,13 @@ def main():
     models = OrderedDict()
     #If we're training
     if('train' in args['action']):
-        models = network_manager.make_all_models(models_to_train_1, models)
+        models = network_manager.make_all_models(models_to_train_1_loc, models)
         print("")
         print("")
         print("**********************************Loaded all ", models.keys()," **********************************")
         
 #        for key, mod in models.iteritems():
-        for mod in models_to_train_1:
+        for mod in models_to_train_1_loc:
             #if it's a difference model, generate new training data from the last prediction of real or imag
             print("")
             print("")
@@ -579,10 +595,10 @@ def main():
             # print(models[mod].model.summary()) 
             models[mod].train()
             
-        models = network_manager.make_all_models(models_to_train_2, models)
-        if len(models_to_train_2) != 0:
+        models = network_manager.make_all_models(models_to_train_2_loc, models)
+        if len(models_to_train_2_loc) != 0:
             print("**********************************Loaded all ", models.keys()," **********************************")
-        for mod in models_to_train_2:
+        for mod in models_to_train_2_loc:
             #if it's a difference model, generate new training data from the last prediction of real or imag
             print("")
             print("")
@@ -592,8 +608,8 @@ def main():
             # print(models[mod].model.summary())
             models[mod].train()
         
-        models = network_manager.make_all_models(models_to_train_3, models)
-        if len(models_to_train_3) != 0:
+        models = network_manager.make_all_models(models_to_train_3_loc, models)
+        if len(models_to_train_3_loc) != 0:
             print("**********************************Loaded all ", models.keys()," **********************************")
         for mod in models_to_train_3:
             #if it's a difference model, generate new training data from the last prediction of real or imag
@@ -605,10 +621,10 @@ def main():
             # print(models[mod].model.summary())
             models[mod].train()
         
-        models = network_manager.make_all_models(models_to_train_4, models)
-        if len(models_to_train_4) != 0:
+        models = network_manager.make_all_models(models_to_train_4_loc, models)
+        if len(models_to_train_4_loc) != 0:
             print("**********************************Loaded all ", models.keys()," **********************************")
-        for mod in models_to_train_4:
+        for mod in models_to_train_4_loc:
             #if it's a difference model, generate new training data from the last prediction of real or imag
             print("")
             print("")
@@ -619,7 +635,7 @@ def main():
             models[mod].train()    
     
     if ('train+' in args['action']):
-        models_to_train = models_to_train_1 + models_to_train_2 + models_to_train_3 + models_to_train_4;
+        models_to_train = models_to_train_1_loc + models_to_train_2_loc + models_to_train_3_loc + models_to_train_4_loc
         models = network_manager.make_all_models(models_to_train, models, run_type='train+')
         for mod in models_to_train:
             #if it's a difference model, generate new training data from the last prediction of real or imag
@@ -635,9 +651,9 @@ def main():
     if ('train' in args['action']) or ('compile' in args['action']):
         #Which models/outputs to use for final model
         
-        models = network_manager.make_all_models(finals, models, run_type='compile')
+        models = network_manager.make_all_models(finals_loc, models, run_type='compile')
         models_final = OrderedDict()
-        for final_mod in finals:
+        for final_mod in finals_loc:
             models_final[final_mod] = models[final_mod]
         model = network_manager.get_model(models_final)
         model.save('./kmodels/'+model_details+'.h5');
@@ -646,18 +662,18 @@ def main():
     
     #If we're eval
     if ('eval' in args['action']):
-        all_models = network_manager.make_all_models(models_to_eval, models, run_type='eval')
+        all_models = network_manager.make_all_models(models_to_eval_loc, models, run_type='eval')
         for name, mod in all_models.items():
             
-            if name in models_to_eval:
+            if name in models_to_eval_loc:
                 mod.evaluate()
         plt.show()
         
         
     if ('predict' in args['action']):   
-        all_models = network_manager.make_all_models(models_to_predict, models, run_type='predict')
+        all_models = network_manager.make_all_models(models_to_predict_loc, models, run_type='predict')
         for name, mod in all_models.items():
-            if name in models_to_predict:
+            if name in models_to_predict_loc:
                 models[name] = mod
         diff_inputs = OrderedDict([('position', position.getRawData())])
         #setup the inputs and outputs
@@ -793,10 +809,10 @@ def main():
         axsl = []
         axsr = []
         plt.ion()
-        num_plot_rows = len(models_to_predict)
+        num_plot_rows = len(models_to_predict_loc)
         num_plot_cols = 2 #2 ears
         tmp_list = []
-        for i, model_name in enumerate(models_to_predict):
+        for i, model_name in enumerate(models_to_predict_loc):
             axsl.append(fig.add_subplot(num_plot_rows,num_plot_cols,(2*i)+1))
             axsr.append(fig.add_subplot(num_plot_rows,num_plot_cols,(2*i)+2))
             curr_pred_data_list[model_name] = None
@@ -886,7 +902,7 @@ def main():
                 curr_input_pos = predict(models, curr_pred_data_list, inputs, outputs, curr_idx, axsl, axsr,  C_hrir=C_hrir)
 
 
-            for i, model_name in enumerate(models_to_predict):
+            for i, model_name in enumerate(models_to_predict_loc):
                 if i==0:
                     axsl[i].set_title("Left Index: %d\nPosition: (%.2f, %.2f, %.2f)\n(%.2f, %.2f, %.2f)\n%s" %(curr_idx, curr_input_pos[0], curr_input_pos[1], curr_input_pos[2], pos_sph[curr_idx,0], pos_sph[curr_idx,1], pos_sph[curr_idx,2], model_name))    
                     axsr[i].set_title("Right Index: %d\nPosition: (%.2f, %.2f, %.2f)\n(%.2f, %.2f, %.2f)\n%s" %(curr_idx, curr_input_pos[0], curr_input_pos[1], curr_input_pos[2], pos_sph[curr_idx,0], pos_sph[curr_idx,1], pos_sph[curr_idx,2], model_name))    
