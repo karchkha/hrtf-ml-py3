@@ -237,7 +237,7 @@ class Data:
 
     All getters are reshaping the appropriate data (data, mean, std) as (#subjects * #pos, #samples, #ears)
     '''
-    def __init__(self, data, nn, pos=None, test_percent=.1, test_seed=None, normalize=False, navg=False, navg_normalize=False):
+    def __init__(self, data, nn, pos=None, test_percent=.1, test_seed=None, normalize=False, navg=False, navg_normalize=False, pers=False):
         self.raw_data = data
         self.nn = nn
         self.normalize= normalize

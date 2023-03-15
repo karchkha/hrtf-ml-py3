@@ -1,8 +1,8 @@
-branch = 'This is personalization-1.0.0 branch !!!! yaaaaya !!!'
-iterations = 20
-epochs = 20
-maglr_iterations = 25
-maglr_epochs = 25
+branch = 'personalization-1.0.0'
+iterations = 1 # 20
+epochs = 1 #20
+maglr_iterations = 1 # 25
+maglr_epochs = 1 # 25
 #50 points for cipic
 points_per_ring = 50
 percent_test_points = .1 #0.005 #Gives single test data point for scut 
