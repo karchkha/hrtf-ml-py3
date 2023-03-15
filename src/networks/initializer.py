@@ -26,7 +26,9 @@ def parseargs():
     parser.add_argument('db',type=str, help='URL to downnload from')    
     parser.add_argument('subjects', type=str, nargs='+', help='Subject number')
     parser.add_argument('-nt', '--network_type', type=str, dest='network_type', default='mag_phase', help='network_type')
-    parser.add_argument('-t', dest='hrir_type', type=str, default='trunc_64', help='Type of the database (default: trunc_64. options: raw,trunc_64)')
+    parser.add_argument('-t', dest='hrir_type', type=str, default='trunc_64', help='Type of the database (default: trunc_64. options: raw,trunc_64,smooth_1,smooth_2,smooth_3)')
+    parser.add_argument('-C', dest='C_hrir_type', type=str, default='trunc_64', help='Type of the database to compare the prediction with (default: trunc_64. options: raw,trunc_64,smooth_1,smooth_2,smooth_3)')
+    parser.add_argument('-O', dest='train_only', type=str, default=None, help='Only train the listed models')
     parser.add_argument('--noanthro', dest='noanthro', action='store_true', help='Flag to not train with anthro. By default, the network uses anthro data')
     parser.add_argument('-a', '--action', type=str, default='train', nargs='+', help='(train|predict|eval|compile)')
     parser.add_argument('-nn', '--network_number', type=int, default=0, help='Iterate the network number if you changed the network.')
@@ -78,7 +80,7 @@ def init():
     else:
         subj_list = args['subjects']        
         if args['network_number'] > 0:
-            model_details = str(args['network_number'])+'_'+args['db']+'_all'+'_t'+args['hrir_type']+'_r'+str(args['ring'])+'_a'+str(train_anthro)+'_e'+str(''.join(args['ear']))+'_n'+str(args['nfft'])+'_0'
+            model_details = str(args['network_number'])+'_'+args['db']+'_'+''.join(args['subjects'])+'_t'+args['hrir_type']+'_r'+str(args['ring'])+'_a'+str(train_anthro)+'_e'+str(''.join(args['ear']))+'_n'+str(args['nfft'])+'_0'
         else:
             model_details = args['db']+'_'+''.join(args['subjects'])+'_t'+args['hrir_type']+'_r'+str(args['ring'])+'_a'+str(train_anthro)+'_e'+str(''.join(args['ear']))+'_n'+str(args['nfft'])+'_0'
 

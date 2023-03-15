@@ -37,6 +37,30 @@ def cart2sph(pos):
 
 
 def lsd(y, yhat, length=32):
+    if (np.shape(yhat) == np.shape([1])):
+        length = 1
+    else:
+        y_tmp = np.squeeze(y)
+        yhat_tmp = np.squeeze(yhat)
+        if length != 32:
+            y = y_tmp[:length]
+            yhat = yhat_tmp[:length]
+        else:
+            y = y_tmp
+            yhat = yhat_tmp
+
+    numer = 0
+    denom = 0
+    for i in range(length):
+        numer = numer + (y[i] - yhat[i])**2.0
+        denom += 1
+    lsd = m.sqrt(numer/denom)
+    return lsd
+    
+
+def defunct_lsd(y, yhat, length=32):
+    return (lsd_lsd(y,yhat))
+    #return (lsd_lsd(y,yhat, length))
     y_tmp = np.squeeze(y)
     yhat_tmp = np.squeeze(yhat)
     if length != 32:
@@ -49,28 +73,38 @@ def lsd(y, yhat, length=32):
     denom = 0
     for i in range(length):
         #numer = numer + (20*np.log10(np.divide(np.abs(y[i]),np.abs(yhat[i]))))**2.0
-        numer = numer + (y[i] - yhat[i])**2.0
+        if y[i] < 0.0001:
+            y[i] = 0.0001
+        if yhat[i] < 0.0001:
+            yhat[i] = 0.0001
+        x = 20*np.log10(np.abs(y[i]))
+        xhat = 20*np.log10(np.abs(yhat[i]))
+        numer = numer + (x - xhat)**2.0
+        # numer = numer + (y[i] - yhat[i])**2.0
         denom += 1
     lsd = m.sqrt(numer/denom)
     return lsd
 
-def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=None, pos=None, test_idxs=None):
+
+def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=None, pos=None, test_idxs=None, lsd_user=0, left_right = [True, False], original=False):
     if args['db'] == 'scut':
         num_rows = 29
         num_cols = 170
         num_dists = 10
         num_cols_per_dist = int(num_cols/num_dists)
         frac = .03
+        lsd_offset =  0
     if args['db'] == 'cipic':
         num_rows=50
         num_cols=25
         num_dists = 1
         num_cols_per_dist = int(num_cols/num_dists)
-        zero_idxs = np.concatenate([np.arange(8, num_rows*num_cols, 50), np.arange(num_rows*num_cols-10, 39, -50)])
+        lsd_offset =  num_rows *num_cols * lsd_user
+        zero_idxs = np.concatenate([np.arange(lsd_offset + 8, lsd_offset + num_rows*num_cols, 50), np.arange(lsd_offset + num_rows*num_cols-10, lsd_offset + 39, -50)])
         frac = .05
     
     normalize = matplotlib.colors.Normalize(vmin=0, vmax=7)
-    left_right = [True, True]
+    #left_right = [True, True]
     pos_inputs = inputs['position']
     #print(pos_inputs.shape)
 
@@ -80,9 +114,11 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
     zeroazi_plot_pos_cart = []
     for name in names:
         print ("Getting all LSD for " + name)
-        #print(all_models)
-        model = all_models[name]
-        outputs = all_outputs[name]
+        if original == True:
+            outputs = all_outputs['C_' + name]
+        else: 
+            outputs = all_outputs[name]
+
         lsds_l_11k_test = []
         lsds_r_11k_test = []
         lsds_l_test = []
@@ -100,53 +136,46 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
   
         for i in range(0, num_cols):
             for j in range(0, num_rows):
-                idx = i*num_rows + j
+                idx = lsd_offset + i*num_rows + j
                 curr_input_pos = np.array(pos_inputs[idx]).T
                 curr_input_head = np.array(head_inputs[idx]).T
                 curr_input_ear_l = np.expand_dims(np.array(ear_inputs[idx,:,0]), axis=0)
                 curr_input_ear_r = np.expand_dims(np.array(ear_inputs[idx,:,1]), axis=0)
+                length = 32
                 if name  in ['magl']:
-                    pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l], verbose=0)
+                    model = all_models[name]
+                    pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l])
                     curr_pred_data = pred_data[0]
                     left_right = [True, False]
+                elif name  in ['maglmean']:
+                    # The code for maglmean is not completed - as the input needs to be adjusted as well
+                    model = all_models['magl']
+                    pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l])
+                    curr_pred_data = pred_data[1]
+                    left_right = [True, False]
+                    lsd_0_azi = False
                 elif name in ['magr']:
-                    pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_r], verbose=0)
+                    model = all_models[name]
+                    pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_r])
                     curr_pred_data = pred_data[0]
                     left_right = [False, True]
                 else:
-                
-                    curr_pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l, curr_input_ear_r], verbose=0)
-            
-       
+                    model = all_models[name]
+                    curr_pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l, curr_input_ear_r])
+                    left_right = [True, True]
                 if left_right[0]:
                     lsds_l[j, i] = lsd(outputs[idx,:,0], curr_pred_data[0])
                     lsds_l_11k[j, i] = lsd(outputs[idx,:,0], curr_pred_data[0], 18)
-                    if (lsds_l[j, i] > thresh):
-                        high_idxs_l[idx] = lsds_l[j,i]
-                    if left_right[1]:
-                        lsds_r[j, i] = lsd(outputs[idx,:,1], curr_pred_data[1])
-                        lsds_r_11k[j, i] = lsd(outputs[idx,:,1], curr_pred_data[1], 18)
-                        if (lsds_r[j, i] > thresh):
-                            high_idxs_r[idx] = lsds_r[j,i]
-                elif left_right[1]:
-                    lsds_r[j, i] = lsd(outputs[idx,:,1], curr_pred_data[0])
-                    lsds_r_11k[j, i] = lsd(outputs[idx,:,1], curr_pred_data[0], 18)
                     if (lsds_r[j, i] > thresh):
                         high_idxs_r[idx] = lsds_r[j,i]
-
                 if idx in test_idxs:
-                    if name  in ['magl']:
+                    if left_right[0]:
                         lsds_l_test.append(lsd(outputs[idx,:,0], curr_pred_data[0]))
                         lsds_l_11k_test.append(lsd(outputs[idx,:,0], curr_pred_data[0], 18))
-                    elif name in ['magr']:
-                        lsds_r_test.append(lsd(outputs[idx,:,1], curr_pred_data[0]))
-                        lsds_r_11k_test.append(lsd(outputs[idx,:,1], curr_pred_data[0], 18))
-                    else:
-                        lsds_l_test.append(lsd(outputs[idx,:,0], curr_pred_data[0]))
-                        lsds_l_11k_test.append(lsd(outputs[idx,:,0], curr_pred_data[0], 18))                    
+                    if left_right[1]:
                         lsds_r_test.append(lsd(outputs[idx,:,1], curr_pred_data[1]))
                         lsds_r_11k_test.append(lsd(outputs[idx,:,1], curr_pred_data[1], 18))
-    
+
     
         #fig_lsdall_l = plt.figure()
         #fig_lsdall_l_11k = plt.figure()
@@ -176,57 +205,43 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
             curr_input_head = np.array(head_inputs[zero_idxs])
             curr_input_ear_l = np.expand_dims(np.array(ear_inputs[zero_idxs,:,0]), axis=0)
             curr_input_ear_r = np.expand_dims(np.array(ear_inputs[zero_idxs,:,1]), axis=0)
-
-        
+            print ("left_right[0] = ", left_right[0])
+            print ("left_right[1] = ", left_right[1])
+            if (left_right[1] and left_right[0]):
+                curr_pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_l), np.squeeze(curr_input_ear_r)])
+                pred_l = curr_pred_data[0]
+                pred_r = curr_pred_data[1]
+            elif left_right[0]:
+                curr_pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_l)])
+                pred_l = curr_pred_data[0]
+                np.set_printoptions(threshold=np.inf)
+            elif left_right[1]:
+                curr_pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_r)])
+                pred_r = curr_pred_data[1]
+            else:
+                print ("predict_all_lsd: No Ear was specified")
             lsds_l_1d = []
             lsds_l_1d_11k = []
             lsds_r_1d = []
             lsds_r_1d_11k = []
 
-    #         curr_pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_l), np.squeeze(curr_input_ear_r)])
-            if name  in ['magl']:
-                pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_l)], verbose=0)
-                curr_pred_data = pred_data#[0]
-                left_right = [True, False]
-                pred_l = curr_pred_data[0]
-    #             pred_r = np.random.rand(curr_pred_data[0].shape[0],curr_pred_data[0].shape[1])
-                for (i, (idx, pred)) in enumerate(zip(zero_idxs, pred_l)):
-                    lsds_l_1d.append(lsd(outputs[idx,:,0], pred))
-                    lsds_l_1d_11k.append(lsd(outputs[idx,:,0], pred,18))
+            if lsd_0_azi:
+                if left_right[0]:
+                    for (i, (idx, pred)) in enumerate(zip(zero_idxs, pred_l)):
+                        lsds_l_1d.append(lsd(outputs[idx,:,0], pred))
+                        lsds_l_1d_11k.append(lsd(outputs[idx,:,0], pred,18))
 
-            elif name in ['magr']:
-                pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_r)], verbose=0)
-                curr_pred_data = pred_data#[0]
-                left_right = [False, True]
-    #             pred_l = curr_pred_data[0]
-                pred_r = curr_pred_data[0]
-                for (i, (idx, pred)) in enumerate(zip(zero_idxs, pred_r)):
-                    lsds_r_1d.append(lsd(outputs[idx,:,1], pred))
-                    lsds_r_1d_11k.append(lsd(outputs[idx,:,1], pred,18))            
+                if left_right[1]:
+                    for (i, (idx, pred)) in enumerate(zip(zero_idxs, pred_r)):
+                        lsds_r_1d.append(lsd(outputs[idx,:,1], pred))
+                        lsds_r_1d_11k.append(lsd(outputs[idx,:,1], pred,18))
+                ticks=[0,   3,  5,  7,  8,  9, 10, 11, 12, 13, 14, 15,16,17,  18,  19,  20,  21,  22,  23,  24,  25,  27,  29,  32,  33,  36,  38,  40,  41,  42,  43,  44,  45,  46,  47, 48,49,50, 51, 52, 53, 54, 55, 56, 57, 58, 60, 62, 65]
+                     #[80, 65, 55, 45, 40, 35, 30, 25, 20, 15, 10, 5, 0, -5, -10, -15, -20, -25, -30, -35, -40, -45, -55, -65, -80, -80, -65, -55, -45, -40, -35, -30, -25, -20, -15, -10, -5, 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 55, 65, 80]
         
-            else:
-
-                curr_pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_l), np.squeeze(curr_input_ear_r)], verbose=0)
-        
-                pred_l = curr_pred_data[0]
-                pred_r = curr_pred_data[1]            
-
-                for (i, (idx, pred)) in enumerate(zip(zero_idxs, pred_l)):
-                    lsds_l_1d.append(lsd(outputs[idx,:,0], pred))
-                    lsds_l_1d_11k.append(lsd(outputs[idx,:,0], pred,18))
-                for (i, (idx, pred)) in enumerate(zip(zero_idxs, pred_r)):
-                    lsds_r_1d.append(lsd(outputs[idx,:,1], pred))
-                    lsds_r_1d_11k.append(lsd(outputs[idx,:,1], pred,18))
-        
-        
-            ticks=[0,   3,  5,  7,  8,  9, 10, 11, 12, 13, 14, 15,16,17,  18,  19,  20,  21,  22,  23,  24,  25,  27,  29,  32,  33,  36,  38,  40,  41,  42,  43,  44,  45,  46,  47, 48,49,50, 51, 52, 53, 54, 55, 56, 57, 58, 60, 62, 65]
-                 #[80, 65, 55, 45, 40, 35, 30, 25, 20, 15, 10, 5, 0, -5, -10, -15, -20, -25, -30, -35, -40, -45, -55, -65, -80, -80, -65, -55, -45, -40, -35, -30, -25, -20, -15, -10, -5, 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 55, 65, 80]
-        
-        #print(lsds_l)
-
         if left_right[0]:
             axl = axes_l[0]
             caxl = axl.imshow(lsds_l, cmap='jet', norm=normalize)
+            axl.set_title("Left Ear LSD Full")
             if args['db'] == 'scut':
                 axl.set_xticks(np.arange(0,170,17))
                 axl.set_xticklabels([1.0, .9, .8, .7, .6, .5, .4, .3, .25, .2])
@@ -241,6 +256,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 axl.set_ylabel("Elevation Angle (deg)")
 
             axl_11k = axes_l[1]
+            axl_11k.set_title("Left Ear LSD <11k")
             caxl_11k = axl_11k.imshow(lsds_l_11k, cmap='jet', norm=normalize)
             cbarl = fig_lsdall_l.colorbar(caxl_11k, fraction=frac, ax=axes_l.ravel().tolist())
             cbarl.ax.set_ylabel(' dB', rotation=360)
@@ -254,7 +270,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 axl_11k.set_yticklabels([0, 90, 180])
                 axl_11k.set_xticks([0, 12, 24])
                 axl_11k.set_xticklabels([80, 0, -80])
-                axl_11k.set_xlabel("Azimuthal Angle (deg)")
+                axl_11k.set_xlabel("Azimuthal Angle (deg) <11K")
                 #axl_11k.set_ylabel("Elevation Angle (deg)")
             fig_lsdall_l.savefig("./figures/lsdall_l" + args['db'] + ".eps",bbox_inches='tight')
             #lsds_l_avg = np.mean(np.mean(lsds_l))
@@ -271,25 +287,29 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 lsds_l_11k_test_avg.append(np.mean(lsds_l_11k_test[:])) #            axl.set_title('Full Bandwidth LSD')
     #            axl_11k.set_title('<11k LSD')
             print ("Left " + name + " [full, <11k]: [" + str(lsds_l_avg) + ", "+ str(lsds_l_11k_avg) + "]")
-            print ("Left " + name + " test [full, <11k]: [" + str(lsds_l_test_avg) + ", "+ str(lsds_l_11k_test_avg) + "]")
+            if test_idxs is not None:
+                print ("Left " + name + " test [full, <11k]: [" + str(lsds_l_test_avg) + ", "+ str(lsds_l_11k_test_avg) + "]")
 
-            if args['db'] == 'cipic':
-                axl0 = fig_lsd0l.add_subplot(111)
-                axl0.plot(ticks, lsds_l_1d, 'bo')
-                axl0.plot(ticks, lsds_l_1d, 'b', label="Full Bandwidth")
-                axl0.plot(ticks, lsds_l_1d_11k, 'go')
-                axl0.plot(ticks, lsds_l_1d_11k, 'g--', label="< 11 kHz")
-                axl0.set_xticks(ticks)
-                axl0.set_xticklabels(zeroazi_plot_pos)
-                axl0.autoscale(enable=True, axis='x', tight=True)
-                axl0.legend()
-                axl0.grid(True)
-                axl0.set_xlabel("Azimuthal Angle (deg)")
-                axl0.set_ylabel("Log Spectral Distortion (dB)")
-                axl0.set_title("Left Ear Spectral Distortion")
+            if lsd_0_azi:
+                if args['db'] == 'cipic':
+                    axl0 = fig_lsd0l.add_subplot(111)
+                    axl0.plot(ticks, lsds_l_1d, 'bo')
+                    axl0.plot(ticks, lsds_l_1d, 'b', label="Full Bandwidth")
+                    axl0.plot(ticks, lsds_l_1d_11k, 'go')
+                    axl0.plot(ticks, lsds_l_1d_11k, 'g--', label="< 11 kHz")
+                    axl0.set_xticks(ticks)
+                    axl0.set_xticklabels(zeroazi_plot_pos)
+                    axl0.autoscale(enable=True, axis='x', tight=True)
+                    axl0.legend()
+                    axl0.grid(True)
+                    axl0.set_xlabel("Azimuthal Angle (deg)")
+                    axl0.set_ylabel("Log Spectral Distortion (dB)")
+                    axl0.set_title("Left Ear Spectral Distortion")
+
 
         if left_right[1]:
             axr = axes_r[0]
+            axr.set_title("Right Ear LSD Full")
             caxr = axr.imshow(lsds_r, cmap='jet', norm=normalize)
             if args['db'] == 'scut':
                 axr.set_xticks(np.arange(0,170,17))
@@ -305,6 +325,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 axr.set_ylabel("Elevation Angle (deg)")
 
             axr_11k = axes_r[1]
+            axr_11k.set_title("Right Ear LSD < 11 kHz")
             caxr_11k = axr_11k.imshow(lsds_r_11k, cmap='jet', norm=normalize)
             cbarr = fig_lsdall_r.colorbar(caxr_11k, fraction=frac, ax=axes_r.ravel().tolist())
             cbarr.ax.set_ylabel(' dB', rotation=360)
@@ -335,22 +356,25 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 lsds_r_test_avg.append(np.mean(lsds_r_test[:])) #            axl.set_title('Full Bandwidth LSD')
                 lsds_r_11k_test_avg.append(np.mean(lsds_r_11k_test[:])) #            axl.set_title('Full Bandwidth LSD')
             print ("Right " + name + " [full, <11k]: [" + str(lsds_r_avg) + ", " +  str(lsds_r_11k_avg) + "]")
-            print ("Right " + name + " test [full, <11k]: [" + str(lsds_r_test_avg) + ", "+ str(lsds_r_11k_test_avg) + "]")
+            if test_idxs is not None:
+                print ("Right " + name + " test [full, <11k]: [" + str(lsds_r_test_avg) + ", "+ str(lsds_r_11k_test_avg) + "]")
 
-            if args['db'] == 'cipic':
-                axr0 = fig_lsd0r.add_subplot(111)
-                axr0.plot(ticks, lsds_r_1d, 'bo')
-                axr0.plot(ticks, lsds_r_1d, 'b', label="Full Bandwidth")
-                axr0.plot(ticks, lsds_r_1d_11k, 'go')
-                axr0.plot(ticks, lsds_r_1d_11k, 'g--', label="< 11 kHz")
-                axr0.legend()
-                axr0.grid(True)
-                axr0.set_xticks(ticks)
-                axr0.set_xticklabels(zeroazi_plot_pos)
-                axr0.autoscale(enable=True, axis='x', tight=True)
-                axr0.set_xlabel("Azimuthal Angle (deg)")
-                axr0.set_ylabel("Log Spectral Distortion (dB)")
-                axr0.set_title("Right Ear Spectral Distortion")
+            if lsd_0_azi:
+                if args['db'] == 'cipic':
+                    axr0 = fig_lsd0r.add_subplot(111)
+                    axr0.plot(ticks, lsds_r_1d, 'bo')
+                    axr0.plot(ticks, lsds_r_1d, 'b', label="Full Bandwidth")
+                    axr0.plot(ticks, lsds_r_1d_11k, 'go')
+                    axr0.plot(ticks, lsds_r_1d_11k, 'g--', label="< 11 kHz")
+                    axr0.legend()
+                    axr0.grid(True)
+                    axr0.set_xticks(ticks)
+                    axr0.set_xticklabels(zeroazi_plot_pos)
+                    axr0.autoscale(enable=True, axis='x', tight=True)
+                    axr0.set_xlabel("Azimuthal Angle (deg)")
+                    axr0.set_ylabel("Log Spectral Distortion (dB)")
+                    axr0.set_title("Right Ear Spectral Distortion")
+
     plt.show()
     #plt.close()
 
@@ -443,8 +467,10 @@ def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44
                 axsr[i].bar(0, v[1], width, color='blue', label=k+' Prediction')
         elif ('magl' == k) or ('magreconl' == k):
             axsl[i].plot(freqs, v[0].T, 'b', label= k+' Prediction')
+            print ("lsd = ", lsd(v[0].T, outputs[k][idx,:,0]))
         elif ('magr'== k) or ('magreconr' == k):
             axsr[i].plot(freqs, v[0].T, 'b', label= k+' Prediction')
+            print ("lsd = ", lsd(v[0].T, outputs[k][idx,:,1]))
         else:
             axsl[i].plot(freqs[:np.shape(v[0].T)[0]], v[0].T, 'b', label= k+' Prediction')
             axsr[i].plot(freqs[:np.shape(v[1].T)[0]], v[1].T, 'b', label= k+' Prediction')
@@ -469,8 +495,15 @@ def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44
             if i not in mag_idx:
                 mag_idx.append(i)
         else:
+            # print ("outputs[k][:,:,0] = ", outputs[k][:,:,0])
             axsl[i].plot(freqs, outputs[k][idx,:,0], 'r', label= k+' Actual')
+            if C_hrir is not None:
+                axsl[i].plot(freqs, outputs['C_' + k][idx,:,0], 'g', label= k+' original')
+            # axsl[i].set_ylim(-60,0)
             axsr[i].plot(freqs, outputs[k][idx,:,1], 'r', label= k+' Actual')
+            if C_hrir is not None:
+                axsr[i].plot(freqs, outputs['C_' + k][idx,:,1], 'g', label= k+' Actual')
+            # axsr[i].set_ylim(-60,0)
             print ("LSD Left " + k + ': ' + str(lsd(outputs[k][idx,:,0], v[0], 31)))
             print ("LSD Right " + k + ': ' + str(lsd(outputs[k][idx,:,1], v[1], 31)))
             print("")
@@ -500,8 +533,18 @@ def main():
     subjects = initializer.subjects
     model_details = initializer.model_details
     model_details_prev = initializer.model_details_prev
+
+    if (args['train_only'] is not None):
+        models_to_train_1 = [ args['train_only']]
+        models_to_train_2 = []
+        models_to_train_3 = []
+        models_to_train_4 = []
+        models_to_predict= models_to_train_1
+        models_to_eval = models_to_predict
+        finals = models_to_predict
     
     #Read and format the data
+    C_hrir= None
     if args['db'] == 'scut':
         if 'predict' in args['action']:
             hrir, pos, fs, nn = read_hdf5.getData(args['db'], subjects, db_filepath=args['db_path'], ring=args['ring'], ear=args['ear'], hrir_type=args['hrir_type'], radius=None)
@@ -509,22 +552,13 @@ def main():
             hrir, pos, fs, nn = read_hdf5.getData(args['db'], subjects, db_filepath=args['db_path'], ring=args['ring'], ear=args['ear'], hrir_type=args['hrir_type'], radius=SCUT_RADII)
     else:
         hrir, pos, fs, nn = read_hdf5.getData(args['db'], subjects, db_filepath=args['db_path'], ring=args['ring'], ear=args['ear'], hrir_type=args['hrir_type'], radius=None)
-        
-    # print (hrir.shape)
-    # print(pos[0][0]) 
-    # print (fs[0])
-    # print(nn[0][0])        
+        t64_hrir, pos, fs, nn = read_hdf5.getData(args['db'], subjects, db_filepath=args['db_path'], ring=args['ring'], ear=args['ear'], hrir_type='trunc_64', radius=None)
+        if args['C_hrir_type'] != args['hrir_type']:
+            C_hrir, pos, fs, nn = read_hdf5.getData(args['db'], subjects, db_filepath=args['db_path'], ring=args['ring'], ear=args['ear'], hrir_type=args['C_hrir_type'], radius=None)
 
         
-    data_manager.format_inputs_outputs(pos, hrir, nn)
-    position, head, ear, magnitude, magnitude_raw, real, imaginary = data_manager.get_data()
-    if data_manager.subj_removed:
-        position_test, head_test, ear_test, magnitude_test, magnitude_raw_test, real_test, imaginary_test = data_manager.get_test_subj_data()
-        
-    # print (position, head, ear, magnitude, magnitude_raw, real, imaginary)
-    # print (head.getRawData())
-    # print (head.getRawData().shape)
-
+    data_manager.format_inputs_outputs(pos, hrir, nn, C_hrir=C_hrir)
+    position, head, ear, magnitude, magnitude_raw, real, imaginary , C_magnitude, C_real, C_imaginary = data_manager.get_data()
 
     models = OrderedDict()
     #If we're training
@@ -627,52 +661,74 @@ def main():
                 models[name] = mod
         diff_inputs = OrderedDict([('position', position.getRawData())])
         #setup the inputs and outputs
-        inputs_train = {}
-        inputs_train['position'] = position.getRawData()
-        pos_sph = data_manager.cart2sph(inputs_train['position'])
-        inputs_train['head'] = head.getRawData()
-        inputs_train['ear'] = ear.getRawData()
         outputs_train = {}
         if 'real' in models_to_renormalize:
             outputs_train['real'] = real.getRawData()
+            if C_real is not None:
+                outputs_train['C_real'] = C_real.getRawData()
         else:
             outputs_train['real'] = real.getNormalizedData()
+            if C_real is not None:
+                outputs_train['C_real'] = C_real.getNormalizedData()
         if 'imag' in models_to_renormalize:
             outputs_train['imag'] = imaginary.getRawData()
+            if C_imaginary is not None:
+                outputs_train['C_imag'] = C_imaginary.getRawData()
         else:
             outputs_train['imag'] = imaginary.getNormalizedData()
+            if C_imaginary is not None:
+                outputs_train['C_imag'] = C_imaginary.getNormalizedData()
         if 'magri' in models_to_renormalize:
             outputs_train['magri'] = magnitude.getRawData()
+            if C_magnitude is not None:
+                outputs_train['C_magri'] = C_magnitude.getRawData()
         else:
             outputs_train['magri'] = magnitude.getNormalizedData()
+            if C_magnitude is not None:
+                outputs_train['C_magri'] = C_magnitude.getNormalizedData()
         if 'mag' in models_to_renormalize:
             outputs_train['mag'] = magnitude.getRawData()
+            if C_magnitude is not None:
+                outputs_train['C_mag'] = C_magnitude.getRawData()
         else:
             outputs_train['mag'] = magnitude.getNormalizedData()
+            if C_magnitude is not None:
+                outputs_train['C_mag'] = C_magnitude.getNormalizedData()
         if 'magfinal' in models_to_renormalize:
             outputs_train['magfinal'] = magnitude.getRawData()
+            if C_magnitude is not None:
+                outputs_train['C_magfinal'] = C_magnitude.getRawData()
         else:
             outputs_train['magfinal'] = magnitude.getNormalizedData()
+            if C_magnitude is not None:
+                outputs_train['C_magfinal'] = C_magnitude.getNormalizedData()
         outputs_train['magtotal'] = magnitude_raw.getRawData()
         outputs_train['realmean'] = real.getMean()
         outputs_train['realstd'] = real.getStd()
-        outputs_train['imagmean'] = imaginary.getMean()
-        outputs_train['imagstd'] = imaginary.getStd()
-        outputs_train['magmean'] = magnitude.getMean()
-        outputs_train['magstd'] = magnitude.getStd()
-        outputs_train['magl'] = magnitude.getRawData()
-        outputs_train['magmeanl'] = magnitude.getMean()
-        outputs_train['magstdl'] = magnitude.getStd()
-        outputs_train['maglmean'] = magnitude.getMean()
-        outputs_train['maglstd'] = magnitude.getStd()
-        outputs_train['magr'] = magnitude.getRawData()
-        outputs_train['magmeanr'] = magnitude.getMean()
-        outputs_train['magstdr'] = magnitude.getStd()
-        outputs_train['magrmean'] = magnitude.getMean()
-        outputs_train['magrstd'] = magnitude.getStd()
-        outputs_train['magrecon'] = magnitude.getRawData()
         outputs_train['magreconl'] = magnitude.getRawData()
         outputs_train['magreconr'] = magnitude.getRawData()
+
+        if C_magnitude is not None:
+            outputs_train['C_magtotal'] = C_magnitude.getRawData()
+            outputs_train['C_realmean'] = C_real.getMean()
+            outputs_train['C_realstd'] = C_real.getStd()
+            outputs_train['C_imagmean'] = C_imaginary.getMean()
+            outputs_train['C_imagstd'] = C_imaginary.getStd()
+            outputs_train['C_magmean'] = C_magnitude.getMean()
+            outputs_train['C_magstd'] = C_magnitude.getStd()
+            outputs_train['C_magl'] = C_magnitude.getRawData()
+            outputs_train['C_magmeanl'] = C_magnitude.getMean()
+            outputs_train['C_magstdl'] = C_magnitude.getStd()
+            outputs_train['C_maglmean'] = C_magnitude.getMean()
+            outputs_train['C_maglstd'] = C_magnitude.getStd()
+            outputs_train['C_magr'] = C_magnitude.getRawData()
+            outputs_train['C_magmeanr'] = C_magnitude.getMean()
+            outputs_train['C_magstdr'] = C_magnitude.getStd()
+            outputs_train['C_magrmean'] = C_magnitude.getMean()
+            outputs_train['C_magrstd'] = C_magnitude.getStd()
+            outputs_train['C_magrecon'] = C_magnitude.getRawData()
+            outputs_train['C_magreconl'] = C_magnitude.getRawData()
+            outputs_train['C_magreconr'] = C_magnitude.getRawData()
 
         test_available = False
         try:
@@ -767,21 +823,54 @@ def main():
                 inputs = inputs_train
                 outputs = outputs_train
             if 'lsd' in pred_nums:
-                
-#                 print(inputs["head"].shape)
-#                 for key in inputs.keys():
-#                     inputs_new[key] = inputs[key][2500:]
-#                 for key in outputs.keys():
-#                     outputs_new[key] = outputs[key][2500:]
-#                 print(inputs["head"].shape)   
-                                
-                predict_all_lsd(models, inputs, outputs, names=models_to_predict, args=args, test_idxs=magnitude.getTestIdx())#, ['magtotal']'magl', 'magr']) models_to_analyze
-                continue;
+                lsd_list = pred_nums.split()
+                for x in lsd_list:
+                    if x == 'lsd':
+                        continue
+                    else:
+                        print ("x = ", x)
+                        predict_all_lsd(models, inputs, outputs, names=['magtotal'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x))#, 'magl', 'magr'])
+                        # predict_all_lsd(models, inputs, outputs, names=['magl'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x))#, 'magl', 'magr'])
+                        if (C_hrir is not None):
+                            predict_all_lsd(models, inputs, outputs, names=['magtotal'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x), original=True)
+                        # predict_all_lsd(models, inputs, outputs, names=['maglmean'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x), left_right = [True, False])#, 'magl', 'magr'])
+                        print ("after predict_all")
+                        # predict_all_lsd(models, inputs, outputs, names=['magrmean'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x), left_right = [True, True])#, 'magl', 'magr'])
+                # predict_all_lsd(models, inputs, outputs, names=['magtotal'], args=args, test_idxs=magnitude.getTestIdx())#, 'magl', 'magr'], lsd_user=lsd_user)
+                continue
+            if 'meanl' in pred_nums:
+                lsd_list = pred_nums.split()
+                for x in lsd_list:
+                    if x == 'meanl':
+                        continue
+                    else:
+                        print ("x = ", x)
+                        predict_all_lsd(models, inputs, outputs, names=['maglmean'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x))#, 'magl', 'magr'])
+                        print ("after predict_all")
+
+                continue
             for ax in axsl:
                 ax.clear()
             for ax in axsr:
                 ax.clear()
-            indices = [int(s) for s in pred_nums.split() if s.isdigit()]
+            if (":" in pred_nums):
+                print(pred_nums)
+                rng = [int(s) for s in pred_nums.split(":") if s.isdigit()]
+                print(rng)
+                indices = range(rng[0], rng[1])
+                print(indices)
+            elif (";" in pred_nums):
+                print (pred_nums)
+                rng = [int(s) for s in pred_nums.split(";") if s.isdigit()]
+                print(rng)
+                if (len(rng) == 1):
+                    indices = range(rng[0], rng[0] + 32 * 1250, 1250)
+                else:
+                    indices = range(rng[0], rng[0] + (rng[1]-1) * 1250, 1250)
+                    print(indices)
+            else:
+                indices = [int(s) for s in pred_nums.split() if s.isdigit()]
+
             if '-' in pred_nums:
                 curr_idx = curr_idx - 1
             if '' == pred_nums:
@@ -789,10 +878,13 @@ def main():
 
             if indices:
                 for idx in indices:
-                    curr_input_pos = predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr)
+                    print ("going to predict")
+                    curr_input_pos = predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr,  C_hrir=C_hrir)
+                    print ("predicted")
                 curr_idx = idx
             else:   
-                curr_input_pos = predict(models, curr_pred_data_list, inputs, outputs, curr_idx, axsl, axsr)
+                curr_input_pos = predict(models, curr_pred_data_list, inputs, outputs, curr_idx, axsl, axsr,  C_hrir=C_hrir)
+
 
             for i, model_name in enumerate(models_to_predict):
                 if i==0:
@@ -801,6 +893,10 @@ def main():
                 else:
                     axsl[i].set_title(model_name)
                     axsr[i].set_title(model_name)
+                if (model_name == 'magtotal'):
+                    axsl[i].set_ylim(-70, 0)
+                    axsr[i].set_ylim(-70, 0)
+
 #                axsl[i].legend(loc='lower center')
                 axsl[i].grid(True)
 #                axsr[i].legend(loc='lower center')
