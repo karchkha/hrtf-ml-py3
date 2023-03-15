@@ -104,14 +104,13 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
         frac = .05
     
     normalize = matplotlib.colors.Normalize(vmin=0, vmax=7)
-    #left_right = [True, True]
     pos_inputs = inputs['position']
-    #print(pos_inputs.shape)
-
     head_inputs = inputs['head']
     ear_inputs = inputs['ear']
     zeroazi_plot_pos = []
     zeroazi_plot_pos_cart = []
+    lsd_0_azi = True
+
     for name in names:
         print ("Getting all LSD for " + name)
         if original == True:
@@ -378,7 +377,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
     plt.show()
     #plt.close()
 
-def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44.1, lsd_only=False):
+def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44.1, lsd_only=False, C_hrir=None):
     #Bar graph settings for mean and std
     width = 0.35
     #Get the position and anthro data for prediction
@@ -677,6 +676,11 @@ def main():
                 models[name] = mod
         diff_inputs = OrderedDict([('position', position.getRawData())])
         #setup the inputs and outputs
+        inputs_train = {}
+        inputs_train['position'] = position.getRawData()
+        pos_sph = data_manager.cart2sph(inputs_train['position'])
+        inputs_train['head'] = head.getRawData()
+        inputs_train['ear'] = ear.getRawData()
         outputs_train = {}
         if 'real' in models_to_renormalize:
             outputs_train['real'] = real.getRawData()
