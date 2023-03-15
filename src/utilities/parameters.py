@@ -1,8 +1,8 @@
 branch = 'personalization-1.0.0'
-iterations = 1 # 20
-epochs = 1 #20
-maglr_iterations = 1 # 25
-maglr_epochs = 1 # 25
+iterations = 2 # 20
+epochs = 2 #20
+maglr_iterations = 2 # 25
+maglr_epochs = 2 # 25
 #50 points for cipic
 points_per_ring = 50
 percent_test_points = .1 #0.005 #Gives single test data point for scut 

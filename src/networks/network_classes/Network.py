@@ -285,7 +285,8 @@ class Network(object):
         test_mse = self.get_loss(self.test[0], self.test[1])
         return training_mse, validation_mse, test_mse
 
-    def checkpoint(self , validation_loss):
+    def checkpoint_np(self , validation_loss):              #### this is from old version it is not used anymore might delete later
+
         # validation_loss = self.get_loss(self.validation[0], self.validation[1])
         # validation_loss = np.sum(validation_loss, axis=0)
 
@@ -299,6 +300,27 @@ class Network(object):
             self.val_loss[0] = validation_loss
             self.write_weights()
             self.write_val_loss()
+
+
+    def checkpoint(self, validation_loss):
+        # SDY Jury is stil out on which validation will be better
+        # score = self.model.evaluate(self.validation[0], self.validation[1], verbose=1) 
+
+        #score = self.model.evaluate(self.training[0], self.training[1], verbose=1) 
+        #validation_loss = score[0]
+
+        print ("\nvalidation score = ", validation_loss)
+        if len(self.val_loss) == 0:
+            self.val_loss.append(validation_loss)
+            print ("\nval_loss started at %f. Saving weights" % (validation_loss))
+            self.write_weights()
+            self.write_val_loss()
+        elif validation_loss < self.val_loss[0]:
+            print ("\nval_loss improved from %f to %f. Saving weights" % (self.val_loss[0], validation_loss))
+            self.val_loss[0] = validation_loss
+            self.write_weights()
+            self.write_val_loss()
+
         
     def train(self):
         print ("Begin training")
@@ -308,11 +330,9 @@ class Network(object):
         
         mse = np.zeros((self.iterations, self.mse_shape[0], self.mse_shape[1]))
         for n in range(self.iterations): 
+            print ("Interation: ", n)
             self.seed = self.seed + 1
-            
-            # print("inputs",list(self.training[0].keys()))
-            # print("outputs",list(self.training[1].keys()))
-            
+                     
             self.model.fit( self.training[0],     
                             self.training[1],    
                             epochs= self.epochs, 
@@ -337,24 +357,50 @@ class Network(object):
 
     def evaluate(self):
         fig = plt.figure()
-        axl = fig.add_subplot(2,1,1)
-        axr = fig.add_subplot(2,1,2)
-        axs = [axl, axr]
         self.load_mse()
-        axl.plot(self.mse[:,0,0], label='training left')
-        axl.plot(self.mse[:,1,0], label='validation left')
-        axl.plot(self.mse[:,2,0], label='test left')
-        axl.set_title('MSE for '+self.model_name+'Left Ear Data')
-        axr.plot(self.mse[:,0,1], label='training right')
-        axr.plot(self.mse[:,1,1], label='validation right')
-        axr.plot(self.mse[:,2,1], label='test right')
-        axr.set_title('MSE for '+self.model_name+'Right Ear Data')
-        for ax in axs:
-            ax.set_ylabel('MSE')
-            ax.legend(loc='best')
-            ax.grid(markevery=1)
-            ax.set_xlabel('Iteration')
-        return fig
+        if np.shape(self.mse)[2] == 2:
+            axl = fig.add_subplot(2,1,1)
+            axr = fig.add_subplot(2,1,2)
+            axs = [axl, axr]
+            print ("shape of self.mse = ", np.shape(self.mse))
+            axl.plot(self.mse[:,0,0], label='training left')
+            axl.plot(self.mse[:,1,0], label='validation left')
+            axl.plot(self.mse[:,2,0], label='test left')
+            axl.set_title('MSE for '+self.model_name+'Left Ear Data')
+            axr.plot(self.mse[:,0,1], label='training right')
+            axr.plot(self.mse[:,1,1], label='validation right')
+            axr.plot(self.mse[:,2,1], label='test right')
+            axr.set_title('MSE for '+self.model_name+'Right Ear Data')
+            for ax in axs:
+                ax.set_ylabel('MSE')
+                ax.legend(loc='best')
+                ax.grid(markevery=1)
+                ax.set_xlabel('Iteration')
+            return fig
+        elif np.shape(self.mse)[2] == 3:
+            axshape = fig.add_subplot(3,1,1)
+            axmean = fig.add_subplot(3,1,2)
+            axstd = fig.add_subplot(3,1,3)
+            axs = [axshape, axmean, axstd]
+            axshape.plot(self.mse[:,0,0], label='training left')
+            axshape.plot(self.mse[:,1,0], label='validation left')
+            axshape.plot(self.mse[:,2,0], label='test left')
+            axshape.set_title('MSE for '+self.model_name+'Shape Data')
+            axmean.plot(self.mse[:,0,1], label='training right')
+            axmean.plot(self.mse[:,1,1], label='validation right')
+            axmean.plot(self.mse[:,2,1], label='test right')
+            axmean.set_title('MSE for '+self.model_name+'Mean Data')
+            axstd.plot(self.mse[:,0,2], label='training right')
+            axstd.plot(self.mse[:,1,2], label='validation right')
+            axstd.plot(self.mse[:,2,2], label='test right')
+            axstd.set_title('MSE for '+self.model_name+'Std Data')
+            for ax in axs:
+                ax.set_ylabel('MSE')
+                ax.legend(loc='best')
+                ax.grid(markevery=1)
+                ax.set_xlabel('Iteration')
+            return fig
+
 
 
 
