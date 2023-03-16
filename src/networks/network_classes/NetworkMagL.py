@@ -32,14 +32,18 @@ class NetworkMagL(Network):
         # loss function for shape
 #        loss_functions[self.output_names[0]] = globalvars.custom_loss_renormalize
         loss_functions[self.output_names[0]] = globalvars.custom_loss_MSE
+        #loss_functions[self.output_names[0]] = globalvars.custom_PZ_Dist_MSE
+        # loss_functions[self.output_names[0]] = globalvars.custom_loss_normalized
+        # loss_functions[self.output_names[0]] = globalvars.custom_loss_LSD_MSE
         # loss function for mean
 #        loss_functions[self.output_names[1]] = globalvars.custom_loss_MSEOverY
+
         loss_functions[self.output_names[1]] = globalvars.custom_loss_MSE
         # loss function for std
 #        loss_functions[self.output_names[2]] = globalvars.custom_loss_MSEOverY2
         loss_functions[self.output_names[2]] = globalvars.custom_loss_MSE
         self.loss_weights = {}
-        self.loss_weights[self.output_names[0]] = 1.0
+        self.loss_weights[self.output_names[0]] = 0.1
         self.loss_weights[self.output_names[1]] = 1.0
         self.loss_weights[self.output_names[2]] = 1.0
         
@@ -60,18 +64,33 @@ class NetworkMagL(Network):
 
     def make_model(self):
         init_seed = np.random.randint(0,200,1)[0] #100
+        anthro_num = globalvars.anthro_num
         num_out_neurons = np.shape(self.data[self.model_name].getTrainingData())[1]
-        main_input = concatenate([self.input_layers['position'], self.input_layers['head']], axis=1)
-        layert = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed), activation=globalvars.custom_activation_maglr, name=self.model_name+'_hidden1_l')(main_input)
-        layert = Dense(3*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+1), activation=globalvars.custom_activation_maglr, name=self.model_name+'_hidden2_l')(layert)
-        layert = Dense(6*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+2), activation=globalvars.custom_activation_maglr, name=self.model_name+'_hidden3_l')(layert)
-        layert = Dense(12*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+3), activation=globalvars.custom_activation_maglr, name=self.model_name+'_hidden4_l')(layert)
-        layert = Dense(6*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+4), activation=globalvars.custom_activation_maglr, name=self.model_name+'_hidden5_l')(layert)
-        layert = concatenate([self.input_layers['ear_left'], layert], axis=1)
-        layert = Dense(6*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+5), activation=globalvars.custom_activation_maglr, name=self.model_name+'_hidden6_l')(layert)
-        layert = Dense(3*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+6), activation=globalvars.custom_activation_maglr, name=self.model_name+'_hidden7_l')(layert)
-        layert = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+7), activation=globalvars.custom_activation_maglr, name=self.model_name+'_hidden8_l')(layert)
-        output_mag = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+8), activation=globalvars.custom_activation_maglr, name=self.output_names[0])(layert)
+           
+        ActivationFunc = globalvars.custom_activation_maglr_LSD
+        head_input_l = concatenate([self.input_layers['ear_left'], self.input_layers['head']], axis=1)
+        layer_hl = Dense(anthro_num, kernel_initializer=ki.glorot_uniform(init_seed), activation=ActivationFunc,  name=self.model_name+'_hl1')(head_input_l)
+        layer_hl = Dense(3*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+1), activation=ActivationFunc, name=self.model_name+'_hl2')(layer_hl)
+        layer_hl = Dense(6*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+2), activation=ActivationFunc, name=self.model_name+'_hl3')(layer_hl)
+        layer_hl = Dense(12*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+3), activation=ActivationFunc, name=self.model_name+'_hl4')(layer_hl)
+        layer_hl = Dense(6*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+5), activation=ActivationFunc, name=self.model_name+'_hl5')(layer_hl)
+        layer_hl = Dense(3*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+6), activation=ActivationFunc, name=self.model_name+'_hl6')(layer_hl)
+        layer_hl = Dense(anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+7), activation=ActivationFunc, name=self.model_name+'_hl7')(layer_hl)
+        # layer_hl = Dense(10, kernel_initializer=ki.glorot_uniform(init_seed+8), activation=ActivationFunc, name=self.model_name+'_hl8')(layer_hl)
+
+        main_input_l = concatenate([self.input_layers['position'], layer_hl], axis=1)
+        layert_l = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed), activation=ActivationFunc, name=self.model_name+'_hidden1l')(main_input_l)
+        layert_l = Dense(3*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+1), activation=ActivationFunc, name=self.model_name+'_hidden2l')(layert_l)
+        layert_l = Dense(6*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+2), activation=ActivationFunc, name=self.model_name+'_hidden3l')(layert_l)
+        layert_l = Dense(12*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+2), activation=ActivationFunc, name=self.model_name+'_hidden4l')(layert_l)
+        layert_l = Dense(6*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+2), activation=ActivationFunc, name=self.model_name+'_hidden5l')(layert_l)
+        layert_l = Dense(3*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+3), activation=ActivationFunc, name=self.model_name+'_hidden6l')(layert_l)
+        layert_l = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+4), activation=ActivationFunc, name=self.model_name+'_hidden7l')(layert_l)
+
+        # layert_l = Lambda(globalvars.positive,  name=self.model_name+'_lambda_pos_magl')(layert_l)
+        # output_mag = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+8), activation=globalvars.custom_activation_maglr_final, name=self.output_names[0])(layert_l)
+        output_mag = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+8), activation=ActivationFunc, name=self.output_names[0])(layert_l)
+        
         output_magmean = Lambda(globalvars.mean, name=self.output_names[1])(output_mag)
         output_magstd = Lambda(globalvars.std, name=self.output_names[2])(output_mag)
         self.model = Model(inputs=list(self.input_layers.values()), outputs=[output_mag, output_magmean, output_magstd])

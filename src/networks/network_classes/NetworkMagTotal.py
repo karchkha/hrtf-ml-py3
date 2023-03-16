@@ -83,7 +83,7 @@ class NetworkMagTotal(Network):
                 iterations=iterations, 
                 batch_size=batch_size,
                 init_valid_seed=init_valid_seed,
-                loss_function=globalvars.custom_loss_magtotal)
+                loss_function=loss_functions)
         except Exception as err:
             print ("Failed loading previously trained model. Creating now.")
             if isinstance(input_networks, dict):
@@ -214,6 +214,14 @@ class NetworkMagTotal(Network):
         head_norm = Lambda(globalvars.data_normalize, trainable=False, name=self.model_name+'_lambda_head_normalize_l', arguments={'div': globalvars.head_div, 'scale': globalvars.input_scale})(self.input_layers['head'])
         ear_l_norm = Lambda(globalvars.data_normalize, trainable=False, name=self.model_name+'_lambda_ear_normalize_l', arguments={'div': globalvars.left_ear_div, 'scale': globalvars.input_scale})(self.input_layers['ear_left'])
         ear_r_norm = Lambda(globalvars.data_normalize, trainable=False, name=self.model_name+'_lambda_ear_normalize_r', arguments={'div': globalvars.right_ear_div, 'scale': globalvars.input_scale})(self.input_layers['ear_right'])
+        
+        pos_norm = self.input_layers['position']
+        head_norm = self.input_layers['head']
+        ear_l_norm = self.input_layers['ear_left']
+        ear_r_norm = self.input_layers['ear_right']
+
+
+        
         input_l = concatenate([layert_magavg_l, pos_norm, head_norm, ear_l_norm], axis=1)
         input_r = concatenate([layert_magavg_r, pos_norm, head_norm, ear_r_norm], axis=1)
         num_in_neurons = int(layert_magavg_l.shape[1])

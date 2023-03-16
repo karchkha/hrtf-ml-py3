@@ -330,7 +330,7 @@ class Network(object):
         
         mse = np.zeros((self.iterations, self.mse_shape[0], self.mse_shape[1]))
         for n in range(self.iterations): 
-            print ("Interation: ", n)
+            print ("\nInteration: ", n)
             self.seed = self.seed + 1
                      
             self.model.fit( self.training[0],     
@@ -355,51 +355,74 @@ class Network(object):
         self.write_mse()
         self.write_model()
 
+    #def evaluate(self):
+    #    fig = plt.figure()
+    #    self.load_mse()
+    #    print(np.shape(self.mse))
+    #    if np.shape(self.mse)[1] == 2:
+    #        axl = fig.add_subplot(2,1,1)
+    #        axr = fig.add_subplot(2,1,2)
+    #        axs = [axl, axr]
+    #        print ("shape of self.mse = ", np.shape(self.mse))
+    #        axl.plot(self.mse[:,0,0], label='training left')
+    #        axl.plot(self.mse[:,1,0], label='validation left')
+    #        axl.plot(self.mse[:,2,0], label='test left')
+    #        axl.set_title('MSE for '+self.model_name+'Left Ear Data')
+    #        axr.plot(self.mse[:,0,1], label='training right')
+    #        axr.plot(self.mse[:,1,1], label='validation right')
+    #        axr.plot(self.mse[:,2,1], label='test right')
+    #        axr.set_title('MSE for '+self.model_name+'Right Ear Data')
+    #        for ax in axs:
+    #            ax.set_ylabel('MSE')
+    #            ax.legend(loc='best')
+    #            ax.grid(markevery=1)
+    #            ax.set_xlabel('Iteration')
+    #        return fig
+    #    elif np.shape(self.mse)[1] == 3:
+    #        axshape = fig.add_subplot(3,1,1)
+    #        axmean = fig.add_subplot(3,1,2)
+    #        axstd = fig.add_subplot(3,1,3)
+    #        axs = [axshape, axmean, axstd]
+    #        axshape.plot(self.mse[:,0,0], label='training left')
+    #        axshape.plot(self.mse[:,1,0], label='validation left')
+    #        axshape.plot(self.mse[:,2,0], label='test left')
+    #        axshape.set_title('MSE for '+self.model_name+'Shape Data')
+    #        axmean.plot(self.mse[:,0,1], label='training right')
+    #        axmean.plot(self.mse[:,1,1], label='validation right')
+    #        axmean.plot(self.mse[:,2,1], label='test right')
+    #        axmean.set_title('MSE for '+self.model_name+'Mean Data')
+    #        axstd.plot(self.mse[:,0,2], label='training right')
+    #        axstd.plot(self.mse[:,1,2], label='validation right')
+    #        axstd.plot(self.mse[:,2,2], label='test right')
+    #        axstd.set_title('MSE for '+self.model_name+'Std Data')
+    #        for ax in axs:
+    #            ax.set_ylabel('MSE')
+    #            ax.legend(loc='best')
+    #            ax.grid(markevery=1)
+    #            ax.set_xlabel('Iteration')
+    #        return fig
+
+
     def evaluate(self):
         fig = plt.figure()
+        axl = fig.add_subplot(2,1,1)
+        axr = fig.add_subplot(2,1,2)
+        axs = [axl, axr]
         self.load_mse()
-        if np.shape(self.mse)[2] == 2:
-            axl = fig.add_subplot(2,1,1)
-            axr = fig.add_subplot(2,1,2)
-            axs = [axl, axr]
-            print ("shape of self.mse = ", np.shape(self.mse))
-            axl.plot(self.mse[:,0,0], label='training left')
-            axl.plot(self.mse[:,1,0], label='validation left')
-            axl.plot(self.mse[:,2,0], label='test left')
-            axl.set_title('MSE for '+self.model_name+'Left Ear Data')
-            axr.plot(self.mse[:,0,1], label='training right')
-            axr.plot(self.mse[:,1,1], label='validation right')
-            axr.plot(self.mse[:,2,1], label='test right')
-            axr.set_title('MSE for '+self.model_name+'Right Ear Data')
-            for ax in axs:
-                ax.set_ylabel('MSE')
-                ax.legend(loc='best')
-                ax.grid(markevery=1)
-                ax.set_xlabel('Iteration')
-            return fig
-        elif np.shape(self.mse)[2] == 3:
-            axshape = fig.add_subplot(3,1,1)
-            axmean = fig.add_subplot(3,1,2)
-            axstd = fig.add_subplot(3,1,3)
-            axs = [axshape, axmean, axstd]
-            axshape.plot(self.mse[:,0,0], label='training left')
-            axshape.plot(self.mse[:,1,0], label='validation left')
-            axshape.plot(self.mse[:,2,0], label='test left')
-            axshape.set_title('MSE for '+self.model_name+'Shape Data')
-            axmean.plot(self.mse[:,0,1], label='training right')
-            axmean.plot(self.mse[:,1,1], label='validation right')
-            axmean.plot(self.mse[:,2,1], label='test right')
-            axmean.set_title('MSE for '+self.model_name+'Mean Data')
-            axstd.plot(self.mse[:,0,2], label='training right')
-            axstd.plot(self.mse[:,1,2], label='validation right')
-            axstd.plot(self.mse[:,2,2], label='test right')
-            axstd.set_title('MSE for '+self.model_name+'Std Data')
-            for ax in axs:
-                ax.set_ylabel('MSE')
-                ax.legend(loc='best')
-                ax.grid(markevery=1)
-                ax.set_xlabel('Iteration')
-            return fig
+        axl.plot(self.mse[:,0,0], label='training left')
+        axl.plot(self.mse[:,1,0], label='validation left')
+        axl.plot(self.mse[:,2,0], label='test left')
+        axl.set_title('MSE for '+self.model_name+'Left Ear Data')
+        axr.plot(self.mse[:,0,1], label='training right')
+        axr.plot(self.mse[:,1,1], label='validation right')
+        axr.plot(self.mse[:,2,1], label='test right')
+        axr.set_title('MSE for '+self.model_name+'Right Ear Data')
+        for ax in axs:
+            ax.set_ylabel('MSE')
+            ax.legend(loc='best')
+            ax.grid(markevery=1)
+            ax.set_xlabel('Iteration')
+        return fig
 
 
 

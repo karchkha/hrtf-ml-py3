@@ -34,25 +34,6 @@ class NetworkImag(Network):
         init_seed = 100
         num_out_neurons = np.shape(self.data[self.model_name].getTrainingData())[1]
         
-        
-        #main_input = concatenate([self.input_layers['position'], self.input_layers['head']], axis=1)
-        #layert = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'_hidden1')(main_input)
-        #layert = Dense(3*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+1), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'_hidden2')(layert)
-        #layert = Dense(6*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+2), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'_hidden3')(layert)
-        #layert = Dense(12*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+3), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'_hidden4')(layert)
-        #layert = Dense(6*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+4), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'_hidden5')(layert)
-        ##Split into left
-        #layert_l = concatenate([self.input_layers['ear_left'], layert], axis=1)
-        #layert_l = Dense(6*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+5), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'hidden6_l')(layert_l)
-        #layert_l = Dense(3*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+6), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'hidden7_l')(layert_l)
-        #layert_l = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+7), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'hidden8_l')(layert_l)
-        ##Split into right
-        #layert_r = concatenate([self.input_layers['ear_right'], layert], axis=1)
-        #layert_r = Dense(6*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+5), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'hidden6_r')(layert_r)
-        #layert_r = Dense(3*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+6), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'hidden7_r')(layert_r)
-        #layert_r = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+7), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'hidden8_r')(layert_r)
-
-        
         anthro_num = globalvars.anthro_num
         # Left anthro
         head_input_l = concatenate([self.input_layers['ear_left'], self.input_layers['head']], axis=1)

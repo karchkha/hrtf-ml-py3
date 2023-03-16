@@ -244,6 +244,7 @@ class Data:
         self.num_subj = np.shape(data)[0]
         self.normalized_data, self.mean, self.std = get_mean_and_power(self.raw_data)
         self.pos = None
+        self.pers = pers
         if pos is not None:
             self.pos = pos;
         if self.normalize:
@@ -257,26 +258,25 @@ class Data:
         self.min = np.min(self.data)
 
     def setTestData(self, percent, seed=None, navg=False):
-        self.test_idx = remove_idx(self.data, num_subj=self.num_subj, percent_to_remove=percent, seed=seed)
-        self.test_data, self.training_valid_data = remove_points(self.data, self.test_idx)
-        self.test_mean, self.training_valid_mean = remove_points(self.mean, self.test_idx)
-        self.test_std, self.training_valid_std = remove_points(self.std, self.test_idx)
+        self.test_idx = remove_idx(self.data, num_subj=self.num_subj, percent_to_remove=percent, seed=seed, pers=self.pers)
+        self.test_data, self.training_valid_data = remove_points(self.data, self.test_idx, pers=self.pers)
+        self.test_mean, self.training_valid_mean = remove_points(self.mean, self.test_idx, pers=self.pers)
+        self.test_std, self.training_valid_std = remove_points(self.std, self.test_idx, pers=self.pers)
         if self.pos is not None:
-            # print("pos???")
-            self.test_pos, self.training_valid_pos = remove_points(self.pos, self.test_idx)
+            self.test_pos, self.training_valid_pos = remove_points(self.pos, self.test_idx, pers=self.pers)
         if navg:
             navg_test_idx = remove_idx(self.navg_data, percent_to_remove=percent, seed=seed)
             self.navg_test_data, self.navg_training_valid_data = remove_points(self.navg_data, navg_test_idx)
             self.navg_test_mean, self.navg_training_valid_mean = remove_points(self.navg_mean, navg_test_idx)
             self.navg_test_std, self.navg_training_valid_std = remove_points(self.navg_std, navg_test_idx)
 
-    def setValidData(self, percent, seed=None, navg=False, pers=False):
-        self.valid_idx = remove_idx(self.training_valid_data, num_subj=self.num_subj, percent_to_remove=percent, seed=seed, pers=pers)
-        self.valid_data, self.training_data = remove_points(self.training_valid_data, self.valid_idx, pers=pers)
-        self.valid_mean, self.training_mean = remove_points(self.training_valid_mean, self.valid_idx, pers=pers)
-        self.valid_std, self.training_std = remove_points(self.training_valid_std, self.valid_idx, pers=pers)
+    def setValidData(self, percent, seed=None, navg=False):
+        self.valid_idx = remove_idx(self.training_valid_data, num_subj=self.num_subj, percent_to_remove=percent, seed=seed, pers=self.pers)
+        self.valid_data, self.training_data = remove_points(self.training_valid_data, self.valid_idx, pers=self.pers)
+        self.valid_mean, self.training_mean = remove_points(self.training_valid_mean, self.valid_idx, pers=self.pers)
+        self.valid_std, self.training_std = remove_points(self.training_valid_std, self.valid_idx, pers=self.pers)
         if self.pos is not None:
-            self.valid_pos, self.training_pos = remove_points(self.training_valid_pos, self.valid_idx, pers=pers)
+            self.valid_pos, self.training_pos = remove_points(self.training_valid_pos, self.valid_idx, pers=self.pers)
 
     def plotRemovedData(self):
         fig = plt.figure()

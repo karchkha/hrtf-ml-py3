@@ -1,8 +1,8 @@
 branch = 'personalization-1.0.0'
-iterations = 2 # 20
-epochs = 2 #20
-maglr_iterations = 2 # 25
-maglr_epochs = 2 # 25
+iterations = 20
+epochs = 20
+maglr_iterations = 25
+maglr_epochs = 25
 #50 points for cipic
 points_per_ring = 50
 percent_test_points = .1 #0.005 #Gives single test data point for scut 
@@ -63,8 +63,8 @@ models_to_eval = models_to_predict
 models_to_renormalize = [] # ['mag', 'magri', 'magfinal']
 
 '''For meanstd_analysis script'''
-#models_to_analyze = ['magl', 'magr']
-models_to_analyze = ['magtotal']  #['magl', 'magr'] #
+models_to_analyze = ['magl', 'magr']
+models_to_analyze = ['magtotal'] 
 subjects_to_analyze = ['all']
 
 '''For analysis script'''
