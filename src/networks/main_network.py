@@ -4,10 +4,7 @@ import pdb
 
 from ftplib import all_errors
 import pdb
-from sre_parse import Verbose
-
 import sys
-from tabnanny import verbose
 sys.path.append("..")
 import time
 from collections import OrderedDict
