@@ -230,6 +230,21 @@ class Network(object):
         self.training = (in_train_dict, out_train_dict)
         self.validation = (in_valid_dict, out_valid_dict)
 
+    ############## Alternative data loading
+        # self.training = self.make_dataset(in_train_dict, out_train_dict, self.batch_size)
+        # self.validation = self.make_dataset(in_valid_dict, out_valid_dict, self.batch_size)
+
+
+
+    def make_dataset(self, data, labels, batch_size):
+
+        dataset = tf.data.Dataset.from_tensor_slices((data, labels))
+        dataset = dataset.shuffle(buffer_size=10000)
+        dataset = dataset.batch(batch_size)
+        dataset = dataset.prefetch(tf.data.AUTOTUNE)
+        return dataset
+
+
     def set_test_inputs_outputs(self):
         print ("Setting test data")
         in_test_dict = {}
@@ -333,8 +348,10 @@ class Network(object):
             print ("\nInteration: ", n)
             self.seed = self.seed + 1
                      
-            self.model.fit( self.training[0],     
-                            self.training[1],    
+            self.model.fit(
+                            self.training[0],     
+                            self.training[1], 
+                            # self.training,
                             epochs= self.epochs, 
                             batch_size = self.batch_size, 
                             validation_data = self.validation,        

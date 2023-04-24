@@ -20,6 +20,9 @@ import initializer
 import data_manager
 import network_manager
 
+import os
+# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
 def cart2sph(pos):
     pos_sph = np.array(np.squeeze(pos))
     if len(np.shape(pos_sph)) == 1:
