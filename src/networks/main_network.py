@@ -21,7 +21,7 @@ import data_manager
 import network_manager
 
 import os
-# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  ### run code on CPU it is just fater for these size of networks!!!
 
 def cart2sph(pos):
     pos_sph = np.array(np.squeeze(pos))
@@ -60,32 +60,32 @@ def lsd(y, yhat, length=32):
     return lsd
     
 
-def defunct_lsd(y, yhat, length=32):
-    return (lsd_lsd(y,yhat))
-    #return (lsd_lsd(y,yhat, length))
-    y_tmp = np.squeeze(y)
-    yhat_tmp = np.squeeze(yhat)
-    if length != 32:
-        y = y_tmp[:length]
-        yhat = yhat_tmp[:length]
-    else:
-        y = y_tmp
-        yhat = yhat_tmp
-    numer = 0
-    denom = 0
-    for i in range(length):
-        #numer = numer + (20*np.log10(np.divide(np.abs(y[i]),np.abs(yhat[i]))))**2.0
-        if y[i] < 0.0001:
-            y[i] = 0.0001
-        if yhat[i] < 0.0001:
-            yhat[i] = 0.0001
-        x = 20*np.log10(np.abs(y[i]))
-        xhat = 20*np.log10(np.abs(yhat[i]))
-        numer = numer + (x - xhat)**2.0
-        # numer = numer + (y[i] - yhat[i])**2.0
-        denom += 1
-    lsd = m.sqrt(numer/denom)
-    return lsd
+# def defunct_lsd(y, yhat, length=32):
+#     return (lsd_lsd(y,yhat))
+#     #return (lsd_lsd(y,yhat, length))
+#     y_tmp = np.squeeze(y)
+#     yhat_tmp = np.squeeze(yhat)
+#     if length != 32:
+#         y = y_tmp[:length]
+#         yhat = yhat_tmp[:length]
+#     else:
+#         y = y_tmp
+#         yhat = yhat_tmp
+#     numer = 0
+#     denom = 0
+#     for i in range(length):
+#         #numer = numer + (20*np.log10(np.divide(np.abs(y[i]),np.abs(yhat[i]))))**2.0
+#         if y[i] < 0.0001:
+#             y[i] = 0.0001
+#         if yhat[i] < 0.0001:
+#             yhat[i] = 0.0001
+#         x = 20*np.log10(np.abs(y[i]))
+#         xhat = 20*np.log10(np.abs(yhat[i]))
+#         numer = numer + (x - xhat)**2.0
+#         # numer = numer + (y[i] - yhat[i])**2.0
+#         denom += 1
+#     lsd = m.sqrt(numer/denom)
+#     return lsd
 
 
 def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=None, pos=None, test_idxs=None, lsd_user=0, left_right = [True, False], original=False):

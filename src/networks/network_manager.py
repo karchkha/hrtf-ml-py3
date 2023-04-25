@@ -133,7 +133,7 @@ def make_models(model_names, models_list, created_by = "", run_type = 'train'):
         ear_input_l = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_mag_left')
         ear_input_r = Input(shape=(np.shape(ear.getTrainingData())[NUMPOINTS_DIM],), name='ear_inputs_mag_right')
         input_layers = OrderedDict([('position',pos_input), ('head',head_input), ('ear_left',ear_input_l), ('ear_right',ear_input_r)])
-        nw_mag = NetworkMag(OrderedDict([('mag',magnitude)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations,epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type, batch_size = batch_size)
+        nw_mag = NetworkMag(OrderedDict([('mag',magnitude)]), input_data, input_layers, model_details=model_details, model_details_prev=model_details_prev, iterations=iterations,epochs=epochs, init_valid_seed=validation_seed, created_by = created_by, run_type = run_type, batch_size = batch_size, dropout = dropout)
         models_list['mag'] = nw_mag
 
 

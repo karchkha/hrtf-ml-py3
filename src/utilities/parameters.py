@@ -13,7 +13,7 @@ num_valid_points = int(round(percent_valid_points*points_per_ring,1))
 test_seed = 0
 validation_seed = 100
 batch_size = 32
-
+dropout = 0.0
 
 
 # System Definitions
