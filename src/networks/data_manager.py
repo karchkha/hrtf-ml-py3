@@ -2,16 +2,8 @@
 
 import pdb
 
-# from keras.layers import Input, Dense, Activation, Dropout, Flatten, Reshape, concatenate, Lambda
-# from keras.models import Sequential, Model, model_from_json, load_model
-# from keras.callbacks import ModelCheckpoint
-# from keras import backend as K
-# from keras.utils.generic_utils import get_custom_objects
-
 import sys, os, shutil, argparse, h5py, time
 import numpy as np
-# import scipy.io as sio
-# import pylab as plt
 import math as m
 # from collections import OrderedDict
 from utilities.network_data import Data
@@ -19,8 +11,6 @@ from utilities.parameters import *
 from utilities import read_hdf5
 import initializer
 
-##python
-#model reduction algorithm
 import scipy
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,7 +20,7 @@ from scipy.linalg import hankel
 
 def IIR_app(hrir,k):
     #k=1; #order is one less than matlab
-    num=1;
+    num=1
 
     # x=hrir[5,zz,:,0];
     L=len(hrir) #check if same with mat
@@ -148,7 +138,7 @@ def format_inputs_outputs(pos, hrir, nn, ret_subjs=False, C_hrir=None):
     subjects = initializer.subjects
     #Include the anthropometric inputs
     hrir_local = np.asarray(hrir, dtype=np.float32)
-    print(C_hrir)
+
     if C_hrir is not None:
         C_hrir_local = np.asarray(C_hrir, dtype=np.float32)
     pos_local = np.asarray(pos, dtype=np.float32)
@@ -170,15 +160,16 @@ def format_inputs_outputs(pos, hrir, nn, ret_subjs=False, C_hrir=None):
 #    ear_norm_local[:,:,:,1] = np.divide(ear_local[:,:,:,1], LeftEar_div)
 #    head_norm_local = np.divide(head_local, Head_div)
 
+    # checking if there is anything to be removed
     num_subj = np.shape(hrir_local)[0]
     test_subj_num = int(m.floor(num_subj*.1))
     subj_removed = False
     if test_subj_num > 0:
         subj_removed = True
-    print ("printing the removed subjects")
-    print(subj_removed)
-    np.random.seed(12345)
-    test_subj_idx = np.random.randint(num_subj, size=test_subj_num)
+    # print ("printing the removed subjects")
+    # print(subj_removed)
+    # np.random.seed(12345)
+    # test_subj_idx = np.random.randint(num_subj, size=test_subj_num)
 
     # Scale Anthro data
     head_div = [16.20, 23.84, 23.06, 3.77, 1.90, 14.04, 9.47, 12.53, 36.84, 17.56, 30.25, 54.10, 8.41, 200.66, 110.00, 65.00, 131.00] 
@@ -269,8 +260,8 @@ def format_inputs_outputs(pos, hrir, nn, ret_subjs=False, C_hrir=None):
      
     set_valid_training()
 
-    if ret_subjs:
-        return test_subj_idx
+    # if ret_subjs:
+    #     return test_subj_idx
 
 def get_data():
     global position, head, ear, magnitude, magnitude_raw, real, imaginary, C_magnitude, C_real, C_imaginary

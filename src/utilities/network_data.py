@@ -246,7 +246,7 @@ class Data:
         self.pos = None
         self.pers = pers
         if pos is not None:
-            self.pos = pos;
+            self.pos = pos
         if self.normalize:
             self.data = self.normalized_data
         else:

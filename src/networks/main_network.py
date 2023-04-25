@@ -534,9 +534,6 @@ def main():
     model_details = initializer.model_details
     model_details_prev = initializer.model_details_prev
 
-    print(args['train_only'])
-
-
     ##### this is got creating local variables so we can use them lately otherwise this doen't work due to py2 to py3 conversion. 
     models_to_train_1_loc = models_to_train_1
     models_to_train_2_loc = models_to_train_2
@@ -747,60 +744,6 @@ def main():
             outputs_train['C_magreconl'] = C_magnitude.getRawData()
             outputs_train['C_magreconr'] = C_magnitude.getRawData()
 
-        test_available = False
-        try:
-            inputs_test = {}
-            inputs_test['position'] = position_test.getRawData()
-            inputs_test['head'] = head_test.getRawData()
-            inputs_test['ear'] = ear_test.getRawData()
-
-            outputs_test = {}
-            if 'real' in models_to_renormalize:
-                outputs_test['real'] = real_test.getRawData()
-            else:
-                outputs_test['real'] = real_test.getNormalizedData()
-            if 'imag' in models_to_renormalize:
-                outputs_test['imag'] = imaginary_test.getRawData()
-            else:
-                outputs_test['imag'] = imaginary_test.getNormalizedData()
-            if 'magri' in models_to_renormalize:
-                outputs_test['magri'] = magnitude_test.getRawData()
-            else:
-                outputs_test['magri'] = magnitude_test.getNormalizedData()
-            if 'mag' in models_to_renormalize:
-                outputs_test['mag'] = magnitude_test.getRawData()
-            else:
-                outputs_test['mag'] = magnitude_test.getNormalizedData()
-            if 'magfinal' in models_to_renormalize:
-                outputs_test['magfinal'] = magnitude_test.getRawData()
-            else:
-                outputs_test['magfinal'] = magnitude_test.getNormalizedData()
-            outputs_test['magtotal'] = magnitude_raw_test.getRawData()
-            outputs_test['realmean'] = real_test.getMean()
-            outputs_test['realstd'] = real_test.getStd()
-            outputs_test['imagmean'] = imaginary_test.getMean()
-            outputs_test['imagstd'] = imaginary_test.getStd()
-            outputs_test['magmean'] = magnitude_test.getMean()
-            outputs_test['magstd'] = magnitude_test.getStd()
-            outputs_test['magl'] = magnitude_test.getRawData()
-            outputs_test['magstdl'] = magnitude_test.getStd()
-            outputs_test['magmeanl'] = magnitude_test.getMean()
-            outputs_test['maglstd'] = magnitude_test.getStd()
-            outputs_test['maglmean'] = magnitude_test.getMean()
-            outputs_test['magrstd'] = magnitude_test.getStd()
-            outputs_test['magrmean'] = magnitude_test.getMean()
-            outputs_test['magr'] = magnitude_test.getRawData()
-            outputs_test['magmeanr'] = magnitude_test.getMean()
-            outputs_test['magstdr'] = magnitude_test.getStd()
-            outputs_test['magrecon'] = magnitude_test.getRawData()
-            outputs_test['magreconl'] = magnitude.getRawData()
-            outputs_test['magreconr'] = magnitude.getRawData()
-
-            test_available = True
-        except:
-            print ("Not enough subjects were available to remove some for test")
-            pass
-
         inputs = inputs_train
         outputs = outputs_train
         curr_pred_data_list = OrderedDict()
@@ -826,12 +769,13 @@ def main():
            
             #take in prediction index 1 and 2
             pred_nums = input("Prediction Indices: ")
-            if (test_available) and ('ts' in pred_nums):
-                print ("Using test subjects")
-                print("")
-                inputs = inputs_test
-                outputs = outputs_test
-            elif 'ti' in pred_nums:
+            # TODO: calculate all the indexes of ts and iterate in them somehow (???)
+            # if (test_available) and ('ts' in pred_nums):  # this won't work anymore in this new setiing
+            #     print ("Using test subjects")
+            #     print("")
+            #     inputs = inputs_test
+            #     outputs = outputs_test
+            if 'ti' in pred_nums:
                 print ("Test indices are: ")
                 print (magnitude.getTestIdx())
             elif 'tr' in pred_nums:

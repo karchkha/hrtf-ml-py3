@@ -111,7 +111,7 @@ def init():
 
     #Exit on clean
     if args['clean'] or args['cleanall']:
-        exit();
+        sys.exit()
 
     model_details_prev = model_details
     subjects = subj_list
