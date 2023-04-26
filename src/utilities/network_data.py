@@ -1,7 +1,5 @@
 #! /usr/bin/python
 
-import pdb
-
 import numpy as np
 import sys
 import os

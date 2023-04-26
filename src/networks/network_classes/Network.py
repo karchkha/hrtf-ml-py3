@@ -1,9 +1,4 @@
-# from keras.layers import Input, Dense, Activation, Dropout, Flatten, Reshape, concatenate
 from tensorflow.keras.models import load_model #Sequential, Model, model_from_json, 
-# from keras.callbacks import ModelCheckpoint
-# import keras.optimizers as ko
-# from keras import backend as K
-# from keras.utils.generic_utils import get_custom_objects
 from tensorflow.keras.utils import plot_model, CustomObjectScope
 import tensorflow as tf
 
@@ -179,7 +174,7 @@ class Network(object):
 
     def write_model(self):
         print ("Saving model")
-        self.model.save(self.modelpath);
+        self.model.save(self.modelpath)
         self.model.save('./kmodels/most_recent_'+self.model_name+'.h5');
         print("Saved "+self.model_name+"  model to disk")
 
