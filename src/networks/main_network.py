@@ -88,7 +88,7 @@ def lsd(y, yhat, length=32):
 #     return lsd
 
 
-def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=None, pos=None, test_idxs=None, lsd_user=0, left_right = [True, False], original=False):
+def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=None, pos=None, test_idxs=None, lsd_user=0, left_right = [True, False], original=False, mean_data = None):
     if args['db'] == 'scut':
         num_rows = 29
         num_cols = 170
@@ -158,6 +158,12 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 else:
                     model = all_models[name]
                     curr_pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l, curr_input_ear_r], verbose=0)
+                    
+                    # print(curr_pred_data)
+                    if mean_data is not None:
+                        curr_pred_data[0] = curr_pred_data[0] + mean_data[idx][:,0]
+                        curr_pred_data[1] = curr_pred_data[1] + mean_data[idx][:,1]
+
                     left_right = [True, True]
                 if left_right[0]:
                     lsds_l[j, i] = lsd(outputs[idx,:,0], curr_pred_data[0])
@@ -208,6 +214,12 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
             print ("left_right[1] = ", left_right[1])
             if (left_right[1] and left_right[0]):
                 curr_pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_l), np.squeeze(curr_input_ear_r)])
+
+                # print(curr_pred_data)
+                if mean_data is not None:
+                    curr_pred_data[0] = curr_pred_data[0] + mean_data[zero_idxs,:,0]
+                    curr_pred_data[1] = curr_pred_data[1] + mean_data[zero_idxs,:,1]
+
                 pred_l = curr_pred_data[0]
                 pred_r = curr_pred_data[1]
             elif left_right[0]:
@@ -374,7 +386,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
     plt.show()
 
 
-def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44.1, lsd_only=False, C_hrir=None):
+def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44.1, lsd_only=False, C_hrir=None, mean_data=None):
     #Bar graph settings for mean and std
     width = 0.35
     #Get the position and anthro data for prediction
@@ -413,6 +425,11 @@ def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44
             curr_pred_data['magrstd'] = pred_data[2]
         elif k in ['magtotal', 'magtotalmean', 'magtotalstd']:
             pred_data = models[k].model.predict([curr_input_pos, curr_input_head, curr_input_ear_l, curr_input_ear_r])
+
+            if mean_data is not None:
+                pred_data[0] = pred_data[0] + mean_data[idx][:,0]
+                pred_data[1] = pred_data[1] + mean_data[idx][:,1]
+
             curr_pred_data={}
             curr_pred_data['magtotal'] = pred_data[0:2]
             curr_pred_data['magtotalmean'] = pred_data[2:4]
@@ -567,7 +584,7 @@ def main():
 
         
     data_manager.format_inputs_outputs(pos, hrir, nn, C_hrir=C_hrir)
-    position, head, ear, magnitude, magnitude_raw, real, imaginary , C_magnitude, C_real, C_imaginary = data_manager.get_data()
+    position, head, ear, magnitude, magnitude_raw, real, imaginary , C_magnitude, C_real, C_imaginary, mean_data = data_manager.get_data()
 
     models = OrderedDict()
     #If we're training
@@ -649,7 +666,7 @@ def main():
         for final_mod in finals_loc:
             models_final[final_mod] = models[final_mod]
         model = network_manager.get_model(models_final)
-        model.save('./kmodels/'+model_details+'.h5');
+        model.save('./kmodels/'+model_details+'.h5')
         model.save('./kmodels/most_recent.h5');   
     
     
@@ -748,6 +765,13 @@ def main():
         outputs = outputs_train
         curr_pred_data_list = OrderedDict()
 
+        if len(mean_data) > 0:
+            mean_tile = np.tile(mean_data, (35, 1, 1))
+
+            outputs["magtotal"] = outputs["magtotal"] + mean_tile
+        else:
+            mean_tile = None
+
         #setup the figure
         fig = plt.figure()
         axsl = []
@@ -790,7 +814,7 @@ def main():
                         continue
                     else:
                         print ("x = ", x)
-                        predict_all_lsd(models, inputs, outputs, names=['magtotal'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x))#, 'magl', 'magr'])
+                        predict_all_lsd(models, inputs, outputs, names=['magtotal'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x), mean_data=mean_tile)#, 'magl', 'magr'])
                         # predict_all_lsd(models, inputs, outputs, names=['magl'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x))#, 'magl', 'magr'])
                         if (C_hrir is not None):
                             predict_all_lsd(models, inputs, outputs, names=['magtotal'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x), original=True)
@@ -840,11 +864,11 @@ def main():
             if indices:
                 for idx in indices:
                     print ("going to predict")
-                    curr_input_pos = predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr,  C_hrir=C_hrir)
+                    curr_input_pos = predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr,  C_hrir=C_hrir, mean_data=mean_tile)
                     print ("predicted")
                 curr_idx = idx
             else:   
-                curr_input_pos = predict(models, curr_pred_data_list, inputs, outputs, curr_idx, axsl, axsr,  C_hrir=C_hrir)
+                curr_input_pos = predict(models, curr_pred_data_list, inputs, outputs, curr_idx, axsl, axsr,  C_hrir=C_hrir, mean_data=mean_tile)
 
 
             for i, model_name in enumerate(models_to_predict_loc):

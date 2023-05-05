@@ -373,7 +373,7 @@ def make_all_models(models_list, models, run_type='train'):
     subjects = initializer.subjects
     model_details = initializer.model_details
     model_details_prev = initializer.model_details_prev
-    position, head, ear, magnitude, magnitude_raw, real, imaginary , C_magnitude, C_real, C_imaginary = data_manager.get_data()
+    position, head, ear, magnitude, magnitude_raw, real, imaginary , C_magnitude, C_real, C_imaginary, mean_data = data_manager.get_data()
 
     # if run_type == 'train':
     #     for model_name in models_list:

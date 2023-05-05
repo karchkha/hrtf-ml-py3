@@ -42,10 +42,10 @@ def IIR_app(hrir,k):
     vpart = np.transpose(vtrans[:][0:k])
     spart= s[0:k]
     Ak= np.matmul(np.matmul(np.transpose(vpart),A),vpart)
-    Bk= np.matmul(np.transpose(vpart),B);
+    Bk= np.matmul(np.transpose(vpart),B)
 
-    Ck=np.matmul(C,vpart);
-    Dk=hrir[0];
+    Ck=np.matmul(C,vpart)
+    Dk=hrir[0]
     num,den=scipy.signal.ss2tf(Ak,Bk,Ck,Dk)
     z,p,gain=scipy.signal.tf2zpk(num,den)
     fig1, ax1 = plt.subplots()
@@ -132,6 +132,7 @@ def format_inputs_outputs(pos, hrir, nn, ret_subjs=False, C_hrir=None):
 
     global position, head, ear, magnitude, magnitude_raw, real, imaginary, C_magnitude, C_real, C_imaginary
     global subj_removed
+    global mean_data
 
     # IIR_app(hrir[0,0,:,0],8)
     args = initializer.args
@@ -225,6 +226,17 @@ def format_inputs_outputs(pos, hrir, nn, ret_subjs=False, C_hrir=None):
     outputs_mag = abs(outputs_complex) 
     outputs_mag = 20.0*np.log10(outputs_mag)
 
+    ### removing means ###############
+    mean_data = []
+    if remove_mean:
+        # [ 2 16 24 26]
+        test_idx = position.getTestIdx()
+        filtered_data = np.delete(outputs_mag, test_idx, axis=0)
+        mean_data = np.mean(filtered_data, axis=0)
+        deviation_data = outputs_mag - mean_data
+        outputs_mag = deviation_data  
+
+
     # TODO - It seems that we no longer need magnitude raw as we no longer normalize the data
     magnitude = Data(outputs_mag, nn_local, pos=pos_local, test_percent=p_t_r, test_seed=test_seed, normalize=False, pers=subj_removed)
     magnitude_raw = Data(outputs_mag, nn_local, pos=pos_local, test_percent=p_t_r, test_seed=test_seed, normalize=False, pers=subj_removed)
@@ -264,5 +276,5 @@ def format_inputs_outputs(pos, hrir, nn, ret_subjs=False, C_hrir=None):
     #     return test_subj_idx
 
 def get_data():
-    global position, head, ear, magnitude, magnitude_raw, real, imaginary, C_magnitude, C_real, C_imaginary
-    return position, head, ear, magnitude, magnitude_raw, real, imaginary, C_magnitude, C_real, C_imaginary
+    global position, head, ear, magnitude, magnitude_raw, real, imaginary, C_magnitude, C_real, C_imaginary, mean_data
+    return position, head, ear, magnitude, magnitude_raw, real, imaginary, C_magnitude, C_real, C_imaginary, mean_data
