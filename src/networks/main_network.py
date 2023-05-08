@@ -433,7 +433,7 @@ def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44
             curr_pred_data={}
             curr_pred_data['magtotal'] = pred_data[0:2]
             curr_pred_data['magtotalmean'] = pred_data[2:4]
-            curr_pred_data['magtotalstd'] = pred_data[4:5]
+            curr_pred_data['magtotalstd'] = pred_data[4:] #[4:5]
         else:
             curr_pred_data = models[k].model.predict([curr_input_pos, curr_input_head, curr_input_ear_l, curr_input_ear_r])
         if isinstance(curr_pred_data, dict):

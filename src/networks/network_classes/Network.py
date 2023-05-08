@@ -175,7 +175,7 @@ class Network(object):
     def write_model(self):
         print ("Saving model")
         self.model.save(self.modelpath)
-        self.model.save('./kmodels/most_recent_'+self.model_name+'.h5');
+        self.model.save('./kmodels/most_recent_'+self.model_name+'.h5')
         print("Saved "+self.model_name+"  model to disk")
 
     def write_weights(self):
