@@ -384,6 +384,9 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                     axr0.set_ylabel("Log Spectral Distortion (dB)")
                     axr0.set_title("Right Ear Spectral Distortion")
     plt.show()
+    for i in plt.get_fignums():
+        plt.figure(i)
+        plt.savefig(f'lsd{i}.png', bbox_inches='tight')
 
 
 def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44.1, lsd_only=False, C_hrir=None, mean_data=None):
@@ -678,6 +681,9 @@ def main():
             if name in models_to_eval_loc:
                 mod.evaluate()
         plt.show()
+        for i in plt.get_fignums():
+            plt.figure(i)
+            plt.savefig(f'figure{i}.png', bbox_inches='tight')
         
         
     if ('predict' in args['action']):   
@@ -736,6 +742,21 @@ def main():
         outputs_train['magtotal'] = magnitude_raw.getRawData()
         outputs_train['realmean'] = real.getMean()
         outputs_train['realstd'] = real.getStd()
+        outputs_train['imagmean'] = imaginary.getMean()
+        outputs_train['imagstd'] = imaginary.getStd()
+        outputs_train['magmean'] = magnitude.getMean()
+        outputs_train['magstd'] = magnitude.getStd()
+        outputs_train['magl'] = magnitude.getRawData()
+        outputs_train['magmeanl'] = magnitude.getMean()
+        outputs_train['magstdl'] = magnitude.getStd()
+        outputs_train['maglmean'] = magnitude.getMean()
+        outputs_train['maglstd'] = magnitude.getStd()
+        outputs_train['magr'] = magnitude.getRawData()
+        outputs_train['magmeanr'] = magnitude.getMean()
+        outputs_train['magstdr'] = magnitude.getStd()
+        outputs_train['magrmean'] = magnitude.getMean()
+        outputs_train['magrstd'] = magnitude.getStd()
+        outputs_train['magrecon'] = magnitude.getRawData()
         outputs_train['magreconl'] = magnitude.getRawData()
         outputs_train['magreconr'] = magnitude.getRawData()
 
@@ -786,6 +807,9 @@ def main():
             curr_pred_data_list[model_name] = None
         fig.canvas.draw()
         plt.show()
+        for i in plt.get_fignums():
+            plt.figure(i)
+            plt.savefig(f'figure{i}.png', bbox_inches='tight')
 
         curr_idx = 0
         #print test_inds_sorted
@@ -888,6 +912,9 @@ def main():
                 axsr[i].grid(True)
 
             plt.show()
+            for i in plt.get_fignums():
+                plt.figure(i)
+                plt.savefig(f'figure{i}.png', bbox_inches='tight')
             #plt.close()
         
 
