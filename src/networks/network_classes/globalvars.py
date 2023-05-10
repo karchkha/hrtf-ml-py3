@@ -29,7 +29,7 @@ def custom_activation_maglr_final(x):
     return K.exp((x-1)*5)/(1+K.exp((x-1)*5))
     return K.exp((x-0.5)*10)/(1+K.exp((x-0.5)*10))
 
-def custom_activation_maglr_LSD(x):
+def custom_activation_maglr_LSD(x):   #TODO ask Shahrokh what happened here? :))
     return 100.0 * K.softsign(x/100.0)
     return 1.0 * K.tanh(x/1.0)
     return (K.tanh(2.0 * x) + 1.000001) / 2.0

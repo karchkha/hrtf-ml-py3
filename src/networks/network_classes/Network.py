@@ -135,8 +135,8 @@ class Network(object):
     def compile_model(self):
         if not self.trained:
             print ("Compiling model")
-            optimizer = tf.keras.optimizers.Adam(learning_rate=0.0005)     # default was 0.001
-            #optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)     # default was 0.001
+            optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001) # it worked well with 0.0005
+            #optimizer = tf.keras.optimizers.Adam(learning_rate=0.001) # orginal
             try:
                 self.loss_weights
                 self.model.compile(optimizer=optimizer, loss=self.loss_function, loss_weights=self.loss_weights)
@@ -148,7 +148,7 @@ class Network(object):
             print ("Loading weights: " + self.weightspath)
             self.model.load_weights(self.weightspath)
         else:
-            print("Starting model ", self.model_name, " weights from scratch");
+            print("Starting model ", self.model_name, " weights from scratch")
 
     def load_mse(self):
         if os.path.exists(self.msepath):
@@ -280,7 +280,7 @@ class Network(object):
         test_mse = self.get_loss(self.test[0], self.test[1])
         return training_mse, validation_mse, test_mse
 
-    def checkpoint_np(self , validation_loss):              #### this is from old version it is not used anymore might delete later
+    def checkpoint_np(self , validation_loss):              #### TODO this is from old version it is not used anymore might delete later
 
         # validation_loss = self.get_loss(self.validation[0], self.validation[1])
         # validation_loss = np.sum(validation_loss, axis=0)

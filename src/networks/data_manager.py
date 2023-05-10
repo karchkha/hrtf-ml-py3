@@ -234,7 +234,7 @@ def format_inputs_outputs(pos, hrir, nn, ret_subjs=False, C_hrir=None):
         filtered_data = np.delete(outputs_mag, test_idx, axis=0)
         mean_data = np.mean(filtered_data, axis=0)
         deviation_data = outputs_mag - mean_data
-        outputs_mag = deviation_data  
+        outputs_mag = deviation_data 
 
 
     # TODO - It seems that we no longer need magnitude raw as we no longer normalize the data

@@ -31,10 +31,11 @@ import network_manager
 from collections import OrderedDict
 
 class NetworkMagRI(Network):
-    def __init__(self, data=None, inputs=None, input_layers=None, input_networks=None, model_details=None, model_details_prev=None, iterations=10, epochs=20, batch_size=32, percent_validation_data=.2, init_valid_seed=None, created_by ="", run_type = "train"): 
+    def __init__(self, data=None, inputs=None, input_layers=None, input_networks=None, model_details=None, model_details_prev=None, iterations=10, epochs=20, batch_size=32, percent_validation_data=.2, init_valid_seed=None, created_by ="", run_type = "train", dropout = 0.0): 
         self.run_type = run_type
         self.model_details = model_details
         self.created_by = created_by
+        self.dropout = dropout
         try:
             super().__init__(# Network.__init__(self, 
                 data, inputs, input_layers,
