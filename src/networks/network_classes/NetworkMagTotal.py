@@ -29,9 +29,10 @@ from .Network import Network
 import network_classes.globalvars as globalvars
 
 class NetworkMagTotal(Network):
-    def __init__(self, data=None, inputs=None, input_layers=None, input_networks=None, model_details=None, model_details_prev=None, iterations=10, epochs=20, batch_size=32, percent_validation_data=.2, init_valid_seed=None, run_type = "train"): 
+    def __init__(self, data=None, inputs=None, input_layers=None, input_networks=None, model_details=None, model_details_prev=None, iterations=10, epochs=20, batch_size=32, percent_validation_data=.2, init_valid_seed=None, run_type = "train", dropout = 0.0): 
         
         self.run_type = run_type
+        self.dropout = dropout
         if type(data) == str:
             self.model_name = data
         else:
@@ -198,16 +199,22 @@ class NetworkMagTotal(Network):
 #        input_magri_l = concatenate([magri_l, const], axis=1)
 #        input_magfinal_l = concatenate([magfinal_l, const], axis=1)
         layert_mag_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_mag_input_l')(mag_l)
+        layert_mag_l = Dropout(self.dropout) (layert_mag_l)
         layert_magri_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magri_input_l')(magri_l)
+        layert_magri_l = Dropout(self.dropout) (layert_magri_l)
         layert_magfinal_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magfinal_input_l')(magfinal_l)
+        layert_magfinal_l = Dropout(self.dropout) (layert_magfinal_l)
         layert_magavg_l = add([layert_mag_l, layert_magri_l, layert_magfinal_l], name=self.model_name+'_magavg_l')
 #        layert_magavg_db_l = Lambda(globalvars.mag_to_db, trainable=False, name=self.model_name+'_lambda_mag_to_db_l')(layert_magavg_l)
 #        input_mag_r = concatenate([mag_r, const], axis=1)
 #        input_magri_r = concatenate([magri_r, const], axis=1)
 #        input_magfinal_r = concatenate([magfinal_r, const], axis=1)
         layert_mag_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_mag_input_r')(mag_r)
+        layert_mag_r = Dropout(self.dropout) (layert_mag_r)
         layert_magri_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magri_input_r')(magri_r)
+        layert_magri_r = Dropout(self.dropout) (layert_magri_r)
         layert_magfinal_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magfinal_input_r')(magfinal_r)
+        layert_magfinal_r = Dropout(self.dropout) (layert_magfinal_r)
         layert_magavg_r = add([layert_mag_r, layert_magri_r, layert_magfinal_r], name=self.model_name+'_magavg_r')
 #        layert_magavg_db_r = Lambda(globalvars.mag_to_db, trainable=False, name=self.model_name+'_lambda_mag_to_db_r')(layert_magavg_r)
         pos_norm = Lambda(globalvars.data_normalize, trainable=False, name=self.model_name+'_lambda_pos_normalize_l', arguments={'div': globalvars.pos_div, 'scale': globalvars.input_scale})(self.input_layers['position'])
@@ -226,10 +233,15 @@ class NetworkMagTotal(Network):
         input_r = concatenate([layert_magavg_r, pos_norm, head_norm, ear_r_norm], axis=1)
         num_in_neurons = int(layert_magavg_l.shape[1])
         layert_l = Dense(num_out_neurons, kernel_initializer=globalvars.custom_init_zeros_ident(), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_magavg_db_input_l')(layert_magavg_l)
+        layert_l = Dropout(self.dropout) (layert_l)
         layert_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden1_l')(layert_l)
+        layert_l = Dropout(self.dropout) (layert_l)
         layert_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden2_l')(layert_l)
+        layert_l = Dropout(self.dropout) (layert_l)
         layert_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden3_l')(layert_l)
+        layert_l = Dropout(self.dropout) (layert_l)
         layert_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden4_l')(layert_l)
+        layert_l = Dropout(self.dropout) (layert_l)
         output_magtotal_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.output_names[0])(layert_l)
         #output_magtotal_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[0])(layert_l)
 #        output_magtotal_norm_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[6])(output_magtotal_l)
@@ -241,10 +253,15 @@ class NetworkMagTotal(Network):
 #        num_in_neurons = int(input_r.shape[1])
         num_in_neurons = int(layert_magavg_r.shape[1])
         layert_r = Dense(num_out_neurons, kernel_initializer=globalvars.custom_init_zeros_ident(), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_magavg_db_input_r')(layert_magavg_r)
+        layert_r = Dropout(self.dropout) (layert_r)
         layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden1_r')(layert_r)
+        layert_r = Dropout(self.dropout) (layert_r)
         layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden2_r')(layert_r)
+        layert_r = Dropout(self.dropout) (layert_r)
         layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden3_r')(layert_r)
+        layert_r = Dropout(self.dropout) (layert_r)
         layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden4_r')(layert_r)
+        layert_r = Dropout(self.dropout) (layert_r)
         output_magtotal_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.output_names[1])(layert_r)
         #output_magtotal_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[1])(layert_r)
         #layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_hidden5_r')(layert_r)

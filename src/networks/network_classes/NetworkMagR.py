@@ -16,8 +16,9 @@ from .Network import Network
 import network_classes.globalvars as globalvars
  
 class NetworkMagR(Network):
-    def __init__(self, data=None, inputs=None, input_layers=None, model_details=None, model_details_prev=None, iterations=10, epochs=20, batch_size=32, percent_validation_data=.2, init_valid_seed=None, run_type = "train"):
+    def __init__(self, data=None, inputs=None, input_layers=None, model_details=None, model_details_prev=None, iterations=10, epochs=20, batch_size=32, percent_validation_data=.2, init_valid_seed=None, run_type = "train", dropout = 0.0):  
         self.run_type = run_type
+        self.dropout = dropout
         if type(data) == str:
             self.model_name = data
         else:
@@ -77,36 +78,41 @@ class NetworkMagR(Network):
         ActivationFunc = globalvars.custom_activation_maglr_LSD
         head_input_r = concatenate([self.input_layers['ear_right'], self.input_layers['head']], axis=1)
         layer_hr = Dense(anthro_num, kernel_initializer=ki.glorot_uniform(init_seed), activation=ActivationFunc,  name=self.model_name+'_hr1')(head_input_r)
+        layer_hr = Dropout(self.dropout) (layer_hr)
         layer_hr = Dense(3*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+1), activation=ActivationFunc, name=self.model_name+'_hr2')(layer_hr)
+        layer_hr = Dropout(self.dropout) (layer_hr)
         layer_hr = Dense(6*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+2), activation=ActivationFunc, name=self.model_name+'_hr3')(layer_hr)
+        layer_hr = Dropout(self.dropout) (layer_hr)
         layer_hr = Dense(12*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+3), activation=ActivationFunc, name=self.model_name+'_hr4')(layer_hr)
+        layer_hr = Dropout(self.dropout) (layer_hr)
         layer_hr = Dense(6*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+5), activation=ActivationFunc, name=self.model_name+'_hr5')(layer_hr)
+        layer_hr = Dropout(self.dropout) (layer_hr)
         layer_hr = Dense(3*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+6), activation=ActivationFunc, name=self.model_name+'_hr6')(layer_hr)
+        layer_hr = Dropout(self.dropout) (layer_hr)
         layer_hr = Dense(anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+7), activation=ActivationFunc, name=self.model_name+'_hr7')(layer_hr)
+        layer_hr = Dropout(self.dropout) (layer_hr)
         # layer_hr = Dense(10, kernel_initializer=ki.glorot_uniform(init_seed+8), activation=ActivationFunc, name=self.model_name+'_hr8')(layer_hr)
 
         main_input_r = concatenate([self.input_layers['position'], layer_hr], axis=1)
         layert_r = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed), activation=ActivationFunc, name=self.model_name+'_hidden1r')(main_input_r)
+        layert_r = Dropout(self.dropout) (layert_r)
         layert_r = Dense(3*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+1), activation=ActivationFunc, name=self.model_name+'_hidden2r')(layert_r)
+        layert_r = Dropout(self.dropout) (layert_r)
         layert_r = Dense(6*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+2), activation=ActivationFunc, name=self.model_name+'_hidden3r')(layert_r)
+        layert_r = Dropout(self.dropout) (layert_r)
         layert_r = Dense(12*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+2), activation=ActivationFunc, name=self.model_name+'_hidden4r')(layert_r)
+        layert_r = Dropout(self.dropout) (layert_r)
         layert_r = Dense(6*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+2), activation=ActivationFunc, name=self.model_name+'_hidden5r')(layert_r)
+        layert_r = Dropout(self.dropout) (layert_r)
         layert_r = Dense(3*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+3), activation=ActivationFunc, name=self.model_name+'_hidden6r')(layert_r)
+        layert_r = Dropout(self.dropout) (layert_r)
         layert_r = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+4), activation=ActivationFunc, name=self.model_name+'_hidden7r')(layert_r)
+        layert_r = Dropout(self.dropout) (layert_r)
 
         # layert_r = Lambda(globalvars.positive,  name=self.model_name+'_lambda_pos_magr')(layert_r)
         # output_mag = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+8), activation=globalvars.custom_activation_maglr_final, name=self.output_names[0])(layert_r)
-        output_mag = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+8), activation=ActivationFunc, name=self.output_names[0])(layert_r)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        output_mag = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+8), activation=ActivationFunc, name=self.output_names[0])(layert_r)    
+                
         output_magmean = Lambda(globalvars.mean, name=self.output_names[1])(output_mag)
         output_magstd = Lambda(globalvars.std, name=self.output_names[2])(output_mag)
         self.model = Model(inputs=list(self.input_layers.values()), outputs=[output_mag, output_magmean, output_magstd])

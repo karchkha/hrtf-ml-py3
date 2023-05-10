@@ -16,9 +16,10 @@ from .Network import Network
 import network_classes.globalvars as globalvars
  
 class NetworkImagstd(Network):
-    def __init__(self, data=None, inputs=None, input_layers=None, model_details=None, model_details_prev=None, iterations=10, epochs=20, batch_size=32, percent_validation_data=.2, init_valid_seed=None, created_by ="", run_type = "train"): 
+    def __init__(self, data=None, inputs=None, input_layers=None, model_details=None, model_details_prev=None, iterations=10, epochs=20, batch_size=32, percent_validation_data=.2, init_valid_seed=None, created_by ="", run_type = "train", dropout = 0.0):
         self.run_type = run_type
-        self.created_by = created_by 
+        self.created_by = created_by
+        self.dropout = dropout
         super().__init__(# Network.__init__(self, 
             data, inputs, input_layers,
             percent_validation_data=percent_validation_data,
@@ -38,13 +39,21 @@ class NetworkImagstd(Network):
         for iput in self.inputs.values():
             num_in_neurons = num_in_neurons + np.shape(iput.getTrainingData())[1]
         layertl = Dense(num_in_neurons, kernel_initializer=ki.glorot_uniform(init_seed), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'_l_hidden1')(main_input_l)
+        layertl = Dropout(self.dropout) (layertl)
         layertl = Dense(int(m.ceil(num_in_neurons/2)), kernel_initializer=ki.glorot_uniform(init_seed+1), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'_l_hidden2')(layertl)
+        layertl = Dropout(self.dropout) (layertl)
         layertl = Dense(int(m.ceil(num_in_neurons/4)), kernel_initializer=ki.glorot_uniform(init_seed+2), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'_l_hidden3')(layertl)
+        layertl = Dropout(self.dropout) (layertl)
         layertl = Dense(int(m.ceil(num_in_neurons/8)), kernel_initializer=ki.glorot_uniform(init_seed+3), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'_l_hidden4')(layertl)
+        layertl = Dropout(self.dropout) (layertl)
         layertr = Dense(num_in_neurons, kernel_initializer=ki.glorot_uniform(init_seed), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'_r_hidden1')(main_input_r)
+        layertr = Dropout(self.dropout) (layertr)
         layertr = Dense(int(m.ceil(num_in_neurons/2)), kernel_initializer=ki.glorot_uniform(init_seed+1), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'_r_hidden2')(layertr)
+        layertr = Dropout(self.dropout) (layertr)
         layertr = Dense(int(m.ceil(num_in_neurons/4)), kernel_initializer=ki.glorot_uniform(init_seed+2), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'_r_hidden3')(layertr)
+        layertr = Dropout(self.dropout) (layertr)
         layertr = Dense(int(m.ceil(num_in_neurons/8)), kernel_initializer=ki.glorot_uniform(init_seed+3), activation=globalvars.custom_activation, name=self.model_name+self.created_by+'_r_hidden4')(layertr)
+        layertr = Dropout(self.dropout) (layertr)
         output_l = Dense(1, kernel_initializer=ki.glorot_uniform(init_seed+4), activation=globalvars.custom_activation, name=self.output_names[0])(layertl)
         output_r = Dense(1, kernel_initializer=ki.glorot_uniform(init_seed+4), activation=globalvars.custom_activation, name=self.output_names[1])(layertr)
         self.model = Model(inputs=list(self.input_layers.values()), outputs=[output_l, output_r])

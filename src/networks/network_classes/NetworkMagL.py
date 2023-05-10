@@ -1,4 +1,4 @@
-from tensorflow.keras.layers import Input, Dense, Activation, Dropout, Flatten, Reshape, concatenate, Lambda
+from tensorflow.keras.layers import Input, Dense, Activation, Dropout, Flatten, Reshape, concatenate, Lambda, Dropout
 from tensorflow.keras.models import Sequential, Model, model_from_json, load_model
 # from keras.callbacks import ModelCheckpoint
 # from keras import backend as K
@@ -17,8 +17,9 @@ from .Network import Network
 import network_classes.globalvars as globalvars
  
 class NetworkMagL(Network):
-    def __init__(self, data=None, inputs=None, input_layers=None, model_details=None, model_details_prev=None, iterations=10, epochs=20, batch_size=32, percent_validation_data=.2, init_valid_seed=None, run_type = "train"): 
+    def __init__(self, data=None, inputs=None, input_layers=None, model_details=None, model_details_prev=None, iterations=10, epochs=20, batch_size=32, percent_validation_data=.2, init_valid_seed=None, run_type = "train", dropout = 0.0):  
         self.run_type = run_type
+        self.dropout = dropout
         if type(data) == str:
             self.model_name = data
         else:
@@ -70,22 +71,36 @@ class NetworkMagL(Network):
         ActivationFunc = globalvars.custom_activation_maglr_LSD
         head_input_l = concatenate([self.input_layers['ear_left'], self.input_layers['head']], axis=1)
         layer_hl = Dense(anthro_num, kernel_initializer=ki.glorot_uniform(init_seed), activation=ActivationFunc,  name=self.model_name+'_hl1')(head_input_l)
+        layer_hl = Dropout(self.dropout) (layer_hl)
         layer_hl = Dense(3*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+1), activation=ActivationFunc, name=self.model_name+'_hl2')(layer_hl)
+        layer_hl = Dropout(self.dropout) (layer_hl)
         layer_hl = Dense(6*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+2), activation=ActivationFunc, name=self.model_name+'_hl3')(layer_hl)
+        layer_hl = Dropout(self.dropout) (layer_hl)
         layer_hl = Dense(12*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+3), activation=ActivationFunc, name=self.model_name+'_hl4')(layer_hl)
+        layer_hl = Dropout(self.dropout) (layer_hl)
         layer_hl = Dense(6*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+5), activation=ActivationFunc, name=self.model_name+'_hl5')(layer_hl)
+        layer_hl = Dropout(self.dropout) (layer_hl)
         layer_hl = Dense(3*anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+6), activation=ActivationFunc, name=self.model_name+'_hl6')(layer_hl)
+        layer_hl = Dropout(self.dropout) (layer_hl)
         layer_hl = Dense(anthro_num, kernel_initializer=ki.glorot_uniform(init_seed+7), activation=ActivationFunc, name=self.model_name+'_hl7')(layer_hl)
+        layer_hl = Dropout(self.dropout) (layer_hl)
         # layer_hl = Dense(10, kernel_initializer=ki.glorot_uniform(init_seed+8), activation=ActivationFunc, name=self.model_name+'_hl8')(layer_hl)
 
         main_input_l = concatenate([self.input_layers['position'], layer_hl], axis=1)
         layert_l = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed), activation=ActivationFunc, name=self.model_name+'_hidden1l')(main_input_l)
+        layert_l = Dropout(self.dropout) (layert_l)
         layert_l = Dense(3*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+1), activation=ActivationFunc, name=self.model_name+'_hidden2l')(layert_l)
+        layert_l = Dropout(self.dropout) (layert_l)
         layert_l = Dense(6*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+2), activation=ActivationFunc, name=self.model_name+'_hidden3l')(layert_l)
+        layert_l = Dropout(self.dropout) (layert_l)
         layert_l = Dense(12*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+2), activation=ActivationFunc, name=self.model_name+'_hidden4l')(layert_l)
+        layert_l = Dropout(self.dropout) (layert_l)
         layert_l = Dense(6*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+2), activation=ActivationFunc, name=self.model_name+'_hidden5l')(layert_l)
+        layert_l = Dropout(self.dropout) (layert_l)
         layert_l = Dense(3*num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+3), activation=ActivationFunc, name=self.model_name+'_hidden6l')(layert_l)
+        layert_l = Dropout(self.dropout) (layert_l)
         layert_l = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+4), activation=ActivationFunc, name=self.model_name+'_hidden7l')(layert_l)
+        layert_l = Dropout(self.dropout) (layert_l)
 
         # layert_l = Lambda(globalvars.positive,  name=self.model_name+'_lambda_pos_magl')(layert_l)
         # output_mag = Dense(num_out_neurons, kernel_initializer=ki.glorot_uniform(init_seed+8), activation=globalvars.custom_activation_maglr_final, name=self.output_names[0])(layert_l)

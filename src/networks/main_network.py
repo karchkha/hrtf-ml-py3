@@ -104,7 +104,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
         lsd_offset =  num_rows *num_cols * lsd_user
         zero_idxs = np.concatenate([np.arange(lsd_offset + 8, lsd_offset + num_rows*num_cols, 50), np.arange(lsd_offset + num_rows*num_cols-10, lsd_offset + 39, -50)])
         frac = .05
-    normalize = matplotlib.colors.Normalize(vmin=0, vmax=7)
+
     pos_inputs = inputs['position']
     head_inputs = inputs['head']
     ear_inputs = inputs['ear']
@@ -113,6 +113,16 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
     lsd_0_azi = True
     for name in names:
         print ("Getting all LSD for " + name)
+
+        ### scaling normalisation for graphs for differnt networks
+        if  name in  ["real", "imag", "magri", "mag", "magfinal", "realmean",  "realstd", "imagmean", "imagstd"]:
+            if mean_data is not None:
+                normalize = matplotlib.colors.Normalize(vmin=0, vmax=1.4)
+            else:
+                normalize = matplotlib.colors.Normalize(vmin=0, vmax=0.7)
+        else:
+            normalize = matplotlib.colors.Normalize(vmin=0, vmax=7)
+
         if original == True:
             outputs = all_outputs['C_' + name]
         else: 
@@ -141,6 +151,10 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 if name  in ['magl']:
                     model = all_models[name]
                     pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l], verbose=0)
+
+                    if mean_data is not None:
+                        pred_data[0] = pred_data[0] + mean_data[idx][:,0]
+
                     curr_pred_data = pred_data[0]
                     left_right = [True, False]
                 elif name  in ['maglmean']:
@@ -153,6 +167,10 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 elif name in ['magr']:
                     model = all_models[name]
                     pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_r], verbose=0)
+
+                    if mean_data is not None:
+                        pred_data[0] = pred_data[0] + mean_data[idx][:,1]
+
                     curr_pred_data = pred_data[0]
                     left_right = [False, True]
                 else:
@@ -160,9 +178,10 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                     curr_pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l, curr_input_ear_r], verbose=0)
                     
                     # print(curr_pred_data)
-                    if mean_data is not None:
-                        curr_pred_data[0] = curr_pred_data[0] + mean_data[idx][:,0]
-                        curr_pred_data[1] = curr_pred_data[1] + mean_data[idx][:,1]
+                    if name not in ["real", "imag", "magri", "mag", "magfinal", "realmean",  "realstd", "imagmean", "imagstd"]:
+                        if mean_data is not None:
+                            curr_pred_data[0] = curr_pred_data[0] + mean_data[idx][:,0]
+                            curr_pred_data[1] = curr_pred_data[1] + mean_data[idx][:,1]
 
                     left_right = [True, True]
                 if left_right[0]:
@@ -216,19 +235,31 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 curr_pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_l), np.squeeze(curr_input_ear_r)])
 
                 # print(curr_pred_data)
-                if mean_data is not None:
-                    curr_pred_data[0] = curr_pred_data[0] + mean_data[zero_idxs,:,0]
-                    curr_pred_data[1] = curr_pred_data[1] + mean_data[zero_idxs,:,1]
+                if name not in ["real", "imag", "magri", "mag", "magfinal", "realmean",  "realstd", "imagmean", "imagstd"]:
+                    if mean_data is not None:
+                        curr_pred_data[0] = curr_pred_data[0] + mean_data[zero_idxs,:,0]
+                        curr_pred_data[1] = curr_pred_data[1] + mean_data[zero_idxs,:,1]
 
                 pred_l = curr_pred_data[0]
                 pred_r = curr_pred_data[1]
             elif left_right[0]:
                 curr_pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_l)])
+
+                # print(curr_pred_data)
+                if mean_data is not None:
+                    curr_pred_data[0] = curr_pred_data[0] + mean_data[zero_idxs,:,0]
+
                 pred_l = curr_pred_data[0]
                 np.set_printoptions(threshold=np.inf)
+
             elif left_right[1]:
                 curr_pred_data = model.model.predict([np.squeeze(curr_input_pos), np.squeeze(curr_input_head), np.squeeze(curr_input_ear_r)])
-                pred_r = curr_pred_data[1]
+
+                # print(curr_pred_data)
+                if mean_data is not None:
+                    curr_pred_data[0] = curr_pred_data[0] + mean_data[zero_idxs,:,1]
+
+                pred_r = curr_pred_data[0]
             else:
                 print ("predict_all_lsd: No Ear was specified")
             lsds_l_1d = []
@@ -416,12 +447,20 @@ def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44
 #            curr_pred_data = models[k].model.predict([curr_input_pos])
         if k  in ['magl', 'maglmean', 'maglstd']:
             pred_data = models['magl'].model.predict([curr_input_pos, curr_input_head, curr_input_ear_l])
+
+            if mean_data is not None:
+                pred_data[0] = pred_data[0] + mean_data[idx][:,0]
+
             curr_pred_data = {}
             curr_pred_data['magl'] = pred_data[0]
             curr_pred_data['maglmean'] = pred_data[1]
             curr_pred_data['maglstd'] = pred_data[2]
         elif k in ['magr', 'magrmean', 'magrstd']:
             pred_data = models['magr'].model.predict([curr_input_pos, curr_input_head, curr_input_ear_r])
+
+            if mean_data is not None:
+                pred_data[0] = pred_data[0] + mean_data[idx][:,1]
+
             curr_pred_data = {}
             curr_pred_data['magr'] = pred_data[0]
             curr_pred_data['magrmean'] = pred_data[1]
@@ -436,9 +475,14 @@ def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44
             curr_pred_data={}
             curr_pred_data['magtotal'] = pred_data[0:2]
             curr_pred_data['magtotalmean'] = pred_data[2:4]
-            curr_pred_data['magtotalstd'] = pred_data[4:5]
+            curr_pred_data['magtotalstd'] = pred_data[4:] #[4:5]
         else:
             curr_pred_data = models[k].model.predict([curr_input_pos, curr_input_head, curr_input_ear_l, curr_input_ear_r])
+
+            if mean_data is not None and k not in ["real", "imag", "magri", "mag", "magfinal", "realmean",  "realstd", "imagmean", "imagstd"]:
+                curr_pred_data[0] = curr_pred_data[0] + mean_data[idx][:,0]
+                curr_pred_data[1] = curr_pred_data[1] + mean_data[idx][:,1]
+
         if isinstance(curr_pred_data, dict):
             curr_pred_data_list[k] = curr_pred_data[k]
         else:
@@ -450,6 +494,7 @@ def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44
 #        if (k in ['real', 'imag']) and (k+'diff' in models_to_predict):
 #            v = (v+curr_pred_data_list[k+'diff'])
         #Renormalize the predictions: (predictions + difference) * std + mean
+        #TODO This forllowong lines don't do anything. Seems like it's a letower from the old code. Will delete!!!
         if (k in models_to_renormalize):
             if 'mag' in k:
                 if ('magl' in models.keys()) and ('magr' in models.keys()):
@@ -540,8 +585,6 @@ def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44
 
 def main():
 
-
-
     initializer.parseargs()
     initializer.init()
     
@@ -585,7 +628,7 @@ def main():
         if args['C_hrir_type'] != args['hrir_type']:
             C_hrir, pos, fs, nn = read_hdf5.getData(args['db'], subjects, db_filepath=args['db_path'], ring=args['ring'], ear=args['ear'], hrir_type=args['C_hrir_type'], radius=None)
 
-        
+
     data_manager.format_inputs_outputs(pos, hrir, nn, C_hrir=C_hrir)
     position, head, ear, magnitude, magnitude_raw, real, imaginary , C_magnitude, C_real, C_imaginary, mean_data = data_manager.get_data()
 
@@ -789,7 +832,9 @@ def main():
         if len(mean_data) > 0:
             mean_tile = np.tile(mean_data, (35, 1, 1))
 
-            outputs["magtotal"] = outputs["magtotal"] + mean_tile
+            for mod_name in outputs.keys():
+                if mod_name not in ["real", "imag", "magri", "mag", "magfinal", "realmean",  "realstd", "imagmean", "imagstd"]:
+                    outputs[mod_name] = outputs[mod_name] + mean_tile
         else:
             mean_tile = None
 
@@ -838,15 +883,17 @@ def main():
                         continue
                     else:
                         print ("x = ", x)
-                        predict_all_lsd(models, inputs, outputs, names=['magtotal'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x), mean_data=mean_tile)#, 'magl', 'magr'])
-                        # predict_all_lsd(models, inputs, outputs, names=['magl'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x))#, 'magl', 'magr'])
+                        # predict_all_lsd(models, inputs, outputs, names=['magtotal'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x), mean_data=mean_tile)#, 'magl', 'magr'])
+                        predict_all_lsd(models, inputs, outputs, names=models.keys(), args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x), mean_data=mean_tile)#, 'magl', 'magr'])
+                        
                         if (C_hrir is not None):
-                            predict_all_lsd(models, inputs, outputs, names=['magtotal'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x), original=True)
+                            predict_all_lsd(models, inputs, outputs,names=models.keys(), args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x), original=True,  mean_data=mean_tile)
                         # predict_all_lsd(models, inputs, outputs, names=['maglmean'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x), left_right = [True, False])#, 'magl', 'magr'])
                         print ("after predict_all")
                         # predict_all_lsd(models, inputs, outputs, names=['magrmean'], args=args, test_idxs=magnitude.getTestIdx(), lsd_user=int(x), left_right = [True, True])#, 'magl', 'magr'])
                 # predict_all_lsd(models, inputs, outputs, names=['magtotal'], args=args, test_idxs=magnitude.getTestIdx())#, 'magl', 'magr'], lsd_user=lsd_user)
                 continue
+            # TODO this fillowing lines and line in "predict_all_lsd" about meanl are not used. need to ask Shahrokh if we need them??
             if 'meanl' in pred_nums:
                 lsd_list = pred_nums.split()
                 for x in lsd_list:
