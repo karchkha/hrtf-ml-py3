@@ -42,10 +42,10 @@ class NetworkMagTotal(Network):
         self.output_names = []
         self.output_names.append(self.model_name+'_l')
         self.output_names.append(self.model_name+'_r')
-        self.output_names.append(self.model_name+'mean_l')
-        self.output_names.append(self.model_name+'mean_r')
-        self.output_names.append(self.model_name+'std_l')
-        self.output_names.append(self.model_name+'std_r')
+        # self.output_names.append(self.model_name+'mean_l')
+        # self.output_names.append(self.model_name+'mean_r')
+        # self.output_names.append(self.model_name+'std_l')
+        # self.output_names.append(self.model_name+'std_r')
 #        self.output_names.append(self.model_name+'norm_l')
 #        self.output_names.append(self.model_name+'norm_r')
         loss_functions = {}
@@ -59,19 +59,19 @@ class NetworkMagTotal(Network):
 #        loss_functions[self.output_names[7]] = globalvars.custom_loss_normalized
         loss_functions[self.output_names[0]] = globalvars.custom_loss_MSE
         loss_functions[self.output_names[1]] = globalvars.custom_loss_MSE
-        loss_functions[self.output_names[2]] = globalvars.custom_loss_MSE
-        loss_functions[self.output_names[3]] = globalvars.custom_loss_MSE
-        loss_functions[self.output_names[4]] = globalvars.custom_loss_MSE
-        loss_functions[self.output_names[5]] = globalvars.custom_loss_MSE
+        # loss_functions[self.output_names[2]] = globalvars.custom_loss_MSE
+        # loss_functions[self.output_names[3]] = globalvars.custom_loss_MSE
+        # loss_functions[self.output_names[4]] = globalvars.custom_loss_MSE
+        # loss_functions[self.output_names[5]] = globalvars.custom_loss_MSE
 #        loss_functions[self.output_names[6]] = globalvars.custom_loss_normalized
 #        loss_functions[self.output_names[7]] = globalvars.custom_loss_normalized
         self.loss_weights = {}
         self.loss_weights[self.output_names[0]] = 1.0
         self.loss_weights[self.output_names[1]] = 1.0
-        self.loss_weights[self.output_names[2]] = 1.0
-        self.loss_weights[self.output_names[3]] = 1.0
-        self.loss_weights[self.output_names[4]] = 1.0
-        self.loss_weights[self.output_names[5]] = 1.0
+        # self.loss_weights[self.output_names[2]] = 0.0
+        # self.loss_weights[self.output_names[3]] = 0.0
+        # self.loss_weights[self.output_names[4]] = 0.0
+        # self.loss_weights[self.output_names[5]] = 0.0
 #        self.loss_weights[self.output_names[6]] = 3.0
 #        self.loss_weights[self.output_names[7]] = 3.0
         try:
@@ -130,6 +130,15 @@ class NetworkMagTotal(Network):
         magfinal = self.input_networks['magfinal'].model
         magl = self.input_networks['magl'].model
         magr = self.input_networks['magr'].model
+
+        # tried freezing all trained networkrs
+
+        # mag.trainable = False
+        # magri.trainable = False
+        # magfinal.trainable = False
+        # magr.trainable = False
+        # magl.trainable = False
+
         mag._name = 'mag_model'
         magri._name = 'magri_model'
         magfinal._name = 'magfinal_model'
@@ -203,7 +212,7 @@ class NetworkMagTotal(Network):
         layert_magri_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magri_input_l')(magri_l)
         layert_magri_l = Dropout(self.dropout) (layert_magri_l)
         layert_magfinal_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magfinal_input_l')(magfinal_l)
-        layert_magfinal_l = Dropout(self.dropout) (layert_magfinal_l)
+        # layert_magfinal_l = Dropout(self.dropout) (layert_magfinal_l)
         layert_magavg_l = add([layert_mag_l, layert_magri_l, layert_magfinal_l], name=self.model_name+'_magavg_l')
 #        layert_magavg_db_l = Lambda(globalvars.mag_to_db, trainable=False, name=self.model_name+'_lambda_mag_to_db_l')(layert_magavg_l)
 #        input_mag_r = concatenate([mag_r, const], axis=1)
@@ -214,7 +223,7 @@ class NetworkMagTotal(Network):
         layert_magri_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magri_input_r')(magri_r)
         layert_magri_r = Dropout(self.dropout) (layert_magri_r)
         layert_magfinal_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magfinal_input_r')(magfinal_r)
-        layert_magfinal_r = Dropout(self.dropout) (layert_magfinal_r)
+        # layert_magfinal_r = Dropout(self.dropout) (layert_magfinal_r)
         layert_magavg_r = add([layert_mag_r, layert_magri_r, layert_magfinal_r], name=self.model_name+'_magavg_r')
 #        layert_magavg_db_r = Lambda(globalvars.mag_to_db, trainable=False, name=self.model_name+'_lambda_mag_to_db_r')(layert_magavg_r)
         pos_norm = Lambda(globalvars.data_normalize, trainable=False, name=self.model_name+'_lambda_pos_normalize_l', arguments={'div': globalvars.pos_div, 'scale': globalvars.input_scale})(self.input_layers['position'])
@@ -246,8 +255,8 @@ class NetworkMagTotal(Network):
         #output_magtotal_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[0])(layert_l)
 #        output_magtotal_norm_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[6])(output_magtotal_l)
 #        output_magtotal_l = Lambda(globalvars.positive, name=self.output_names[0])(layert_l)
-        output_magmean_l = Lambda(globalvars.mean, name=self.output_names[2])(output_magtotal_l)
-        output_magstd_l = Lambda(globalvars.std, name=self.output_names[4])(output_magtotal_l)
+        # output_magmean_l = Lambda(globalvars.mean, name=self.output_names[2])(output_magtotal_l)
+        # output_magstd_l = Lambda(globalvars.std, name=self.output_names[4])(output_magtotal_l)
 #        output_magtotal_l = Lambda(globalvars.positive, name=self.output_names[0])(layert_l)
         #Split into right
 #        num_in_neurons = int(input_r.shape[1])
@@ -266,21 +275,24 @@ class NetworkMagTotal(Network):
         #output_magtotal_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[1])(layert_r)
         #layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_hidden5_r')(layert_r)
 #        output_magtotal_norm_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[7])(output_magtotal_r)
-        output_magmean_r = Lambda(globalvars.mean, name=self.output_names[3])(output_magtotal_r)
-        output_magstd_r = Lambda(globalvars.std, name=self.output_names[5])(output_magtotal_r)
+        # output_magmean_r = Lambda(globalvars.mean, name=self.output_names[3])(output_magtotal_r)
+        # output_magstd_r = Lambda(globalvars.std, name=self.output_names[5])(output_magtotal_r)
         #output_magtotal_r = Lambda(globalvars.positive, name=self.output_names[1])(layert_r)
-        self.model = Model(inputs=list(self.input_layers.values()), outputs=[output_magtotal_l, output_magtotal_r, output_magmean_l, output_magmean_r, output_magstd_l, output_magstd_r])
+        # self.model = Model(inputs=list(self.input_layers.values()), outputs=[output_magtotal_l, output_magtotal_r, output_magmean_l, output_magmean_r, output_magstd_l, output_magstd_r])
+        self.model = Model(inputs=list(self.input_layers.values()), outputs=[output_magtotal_l, output_magtotal_r])
         self.model._name = 'magtotal_model'
 
     def set_output_dict(self):
         self.output_dict={}
         for k, d in self.data.items():
             if 'mean' in k:
-                self.output_dict[k+'_l'] = {'training': d.getTrainingMean()[:,:,0], 'valid': d.getValidMean()[:,:,0], 'test': d.getTestMean()[:,:,0]}
-                self.output_dict[k+'_r'] = {'training': d.getTrainingMean()[:,:,1], 'valid': d.getValidMean()[:,:,1], 'test': d.getTestMean()[:,:,1]}
+                pass
+                # self.output_dict[k+'_l'] = {'training': d.getTrainingMean()[:,:,0], 'valid': d.getValidMean()[:,:,0], 'test': d.getTestMean()[:,:,0]}
+                # self.output_dict[k+'_r'] = {'training': d.getTrainingMean()[:,:,1], 'valid': d.getValidMean()[:,:,1], 'test': d.getTestMean()[:,:,1]}
             elif 'std' in k:
-                self.output_dict[k+'_l'] = {'training': d.getTrainingStd()[:,:,0], 'valid': d.getValidStd()[:,:,0], 'test': d.getTestStd()[:,:,0]}
-                self.output_dict[k+'_r'] = {'training': d.getTrainingStd()[:,:,1], 'valid': d.getValidStd()[:,:,1], 'test': d.getTestStd()[:,:,1]}
+                pass
+                # self.output_dict[k+'_l'] = {'training': d.getTrainingStd()[:,:,0], 'valid': d.getValidStd()[:,:,0], 'test': d.getTestStd()[:,:,0]}
+                # self.output_dict[k+'_r'] = {'training': d.getTrainingStd()[:,:,1], 'valid': d.getValidStd()[:,:,1], 'test': d.getTestStd()[:,:,1]}
             else:
                 self.output_dict[k+'_l'] = {'training': d.getTrainingData()[:,:,0], 'valid': d.getValidData()[:,:,0], 'test': d.getTestData()[:,:,0]}
                 self.output_dict[k+'_r'] = {'training': d.getTrainingData()[:,:,1], 'valid': d.getValidData()[:,:,1], 'test': d.getTestData()[:,:,1]}

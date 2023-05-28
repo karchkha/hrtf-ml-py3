@@ -14,6 +14,7 @@ from utilities.network_data import Data
 from time import sleep
 # import globalvars
 import network_classes.globalvars as globalvars
+from utilities.parameters import *
 
 
 class Network(object):
@@ -30,7 +31,10 @@ class Network(object):
                 init_valid_seed=100,
                 both_ears=['l', 'r'],
                 loss_function=None, 
+                lr = initial_lr,
                 ):
+        
+        self.lr = lr
         try:
             self.model_name
         except:
@@ -135,7 +139,7 @@ class Network(object):
     def compile_model(self):
         if not self.trained:
             print ("Compiling model")
-            optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001) # it worked well with 0.0005
+            optimizer = tf.keras.optimizers.Adam(learning_rate=self.lr) # it worked well with 0.0005
             #optimizer = tf.keras.optimizers.Adam(learning_rate=0.001) # orginal
             try:
                 self.loss_weights
@@ -319,8 +323,14 @@ class Network(object):
         
     def train(self):
         print ("Begin training")
-        
-        Model_ckpt = Custom_ModelCheckpoint(self)   #Here I call intance of custom checkpoint that is defined below
+
+        reduce_lr = keras.callbacks.ReduceLROnPlateau(monitor='val_loss',  # or any other metric you are monitoring
+                                    factor=0.5,  # new_lr = lr * factor
+                                    patience=2,  # reduces the learning rate if no improvement after 5 epochs
+                                    min_lr=0.00001,  # minimum learning rate
+                                    verbose=1)
+                
+        Model_ckpt = Custom_ModelCheckpoint(self, reduce_lr)   #Here I call intance of custom checkpoint that is defined below
         # Early_Stop =  keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, verbose=1)
         
         mse = np.zeros((self.iterations, self.mse_shape[0], self.mse_shape[1]))
@@ -334,90 +344,90 @@ class Network(object):
                             batch_size = self.batch_size, 
                             validation_data = self.validation,        
                             shuffle = True,
-                            callbacks = [Model_ckpt], #Early_Stop],
+                            callbacks = [Model_ckpt, reduce_lr], # Early_Stop],
                             verbose=1) 
             self.load_weights()
-            training_mse, valid_mse, test_mse = self.get_mse()
-            mse[n, 0, :] = training_mse
-            mse[n, 1, :] = valid_mse
-            mse[n, 2, :] = test_mse
-            self.set_valid_training_inputs_outputs()
+            # training_mse, valid_mse, test_mse = self.get_mse()
+            # mse[n, 0, :] = training_mse
+            # mse[n, 1, :] = valid_mse
+            # mse[n, 2, :] = test_mse
+            # self.set_valid_training_inputs_outputs()
         print ("End training")
-        if 0 in np.shape(self.mse):
-            self.mse = mse
-        else:
-            self.mse = np.vstack([self.mse, mse])
+        # if 0 in np.shape(self.mse):
+        #     self.mse = mse
+        # else:
+        #     self.mse = np.vstack([self.mse, mse])
         self.write_mse()
         self.write_model()
 
-    #def evaluate(self):
-    #    fig = plt.figure()
-    #    self.load_mse()
-    #    print(np.shape(self.mse))
-    #    if np.shape(self.mse)[1] == 2:
-    #        axl = fig.add_subplot(2,1,1)
-    #        axr = fig.add_subplot(2,1,2)
-    #        axs = [axl, axr]
-    #        print ("shape of self.mse = ", np.shape(self.mse))
-    #        axl.plot(self.mse[:,0,0], label='training left')
-    #        axl.plot(self.mse[:,1,0], label='validation left')
-    #        axl.plot(self.mse[:,2,0], label='test left')
-    #        axl.set_title('MSE for '+self.model_name+'Left Ear Data')
-    #        axr.plot(self.mse[:,0,1], label='training right')
-    #        axr.plot(self.mse[:,1,1], label='validation right')
-    #        axr.plot(self.mse[:,2,1], label='test right')
-    #        axr.set_title('MSE for '+self.model_name+'Right Ear Data')
-    #        for ax in axs:
-    #            ax.set_ylabel('MSE')
-    #            ax.legend(loc='best')
-    #            ax.grid(markevery=1)
-    #            ax.set_xlabel('Iteration')
-    #        return fig
-    #    elif np.shape(self.mse)[1] == 3:
-    #        axshape = fig.add_subplot(3,1,1)
-    #        axmean = fig.add_subplot(3,1,2)
-    #        axstd = fig.add_subplot(3,1,3)
-    #        axs = [axshape, axmean, axstd]
-    #        axshape.plot(self.mse[:,0,0], label='training left')
-    #        axshape.plot(self.mse[:,1,0], label='validation left')
-    #        axshape.plot(self.mse[:,2,0], label='test left')
-    #        axshape.set_title('MSE for '+self.model_name+'Shape Data')
-    #        axmean.plot(self.mse[:,0,1], label='training right')
-    #        axmean.plot(self.mse[:,1,1], label='validation right')
-    #        axmean.plot(self.mse[:,2,1], label='test right')
-    #        axmean.set_title('MSE for '+self.model_name+'Mean Data')
-    #        axstd.plot(self.mse[:,0,2], label='training right')
-    #        axstd.plot(self.mse[:,1,2], label='validation right')
-    #        axstd.plot(self.mse[:,2,2], label='test right')
-    #        axstd.set_title('MSE for '+self.model_name+'Std Data')
-    #        for ax in axs:
-    #            ax.set_ylabel('MSE')
-    #            ax.legend(loc='best')
-    #            ax.grid(markevery=1)
-    #            ax.set_xlabel('Iteration')
-    #        return fig
-
-
     def evaluate(self):
-        fig = plt.figure()
-        axl = fig.add_subplot(2,1,1)
-        axr = fig.add_subplot(2,1,2)
-        axs = [axl, axr]
-        self.load_mse()
-        axl.plot(self.mse[:,0,0], label='training left')
-        axl.plot(self.mse[:,1,0], label='validation left')
-        axl.plot(self.mse[:,2,0], label='test left')
-        axl.set_title('MSE for '+self.model_name+'Left Ear Data')
-        axr.plot(self.mse[:,0,1], label='training right')
-        axr.plot(self.mse[:,1,1], label='validation right')
-        axr.plot(self.mse[:,2,1], label='test right')
-        axr.set_title('MSE for '+self.model_name+'Right Ear Data')
-        for ax in axs:
-            ax.set_ylabel('MSE')
-            ax.legend(loc='best')
-            ax.grid(markevery=1)
-            ax.set_xlabel('Iteration')
-        return fig
+       fig = plt.figure()
+       self.load_mse()
+    #    print(np.shape(self.mse))
+       if np.shape(self.mse)[2] == 2 or np.shape(self.mse)[2] == 6:
+           axl = fig.add_subplot(2,1,1)
+           axr = fig.add_subplot(2,1,2)
+           axs = [axl, axr]
+        #    print ("shape of self.mse = ", np.shape(self.mse))
+           axl.plot(self.mse[:,0,0], label='training left')
+           axl.plot(self.mse[:,1,0], label='validation left')
+           axl.plot(self.mse[:,2,0], label='test left')
+           axl.set_title('MSE for '+self.model_name+'Left Ear Data')
+           axr.plot(self.mse[:,0,1], label='training right')
+           axr.plot(self.mse[:,1,1], label='validation right')
+           axr.plot(self.mse[:,2,1], label='test right')
+           axr.set_title('MSE for '+self.model_name+'Right Ear Data')
+           for ax in axs:
+               ax.set_ylabel('MSE')
+               ax.legend(loc='best')
+               ax.grid(markevery=1)
+               ax.set_xlabel('Iteration')
+           return fig
+       elif np.shape(self.mse)[2] == 3:
+           axshape = fig.add_subplot(3,1,1)
+           axmean = fig.add_subplot(3,1,2)
+           axstd = fig.add_subplot(3,1,3)
+           axs = [axshape, axmean, axstd]
+           axshape.plot(self.mse[:,0,0], label='training left')
+           axshape.plot(self.mse[:,1,0], label='validation left')
+           axshape.plot(self.mse[:,2,0], label='test left')
+           axshape.set_title('MSE for '+self.model_name+'Shape Data')
+           axmean.plot(self.mse[:,0,1], label='training right')
+           axmean.plot(self.mse[:,1,1], label='validation right')
+           axmean.plot(self.mse[:,2,1], label='test right')
+           axmean.set_title('MSE for '+self.model_name+'Mean Data')
+           axstd.plot(self.mse[:,0,2], label='training right')
+           axstd.plot(self.mse[:,1,2], label='validation right')
+           axstd.plot(self.mse[:,2,2], label='test right')
+           axstd.set_title('MSE for '+self.model_name+'Std Data')
+           for ax in axs:
+               ax.set_ylabel('MSE')
+               ax.legend(loc='best')
+               ax.grid(markevery=1)
+               ax.set_xlabel('Iteration')
+           return fig
+
+
+    # def evaluate(self):
+    #     fig = plt.figure()
+    #     axl = fig.add_subplot(2,1,1)
+    #     axr = fig.add_subplot(2,1,2)
+    #     axs = [axl, axr]
+    #     self.load_mse()
+    #     axl.plot(self.mse[:,0,0], label='training left')
+    #     axl.plot(self.mse[:,1,0], label='validation left')
+    #     axl.plot(self.mse[:,2,0], label='test left')
+    #     axl.set_title('MSE for '+self.model_name+'Left Ear Data')
+    #     axr.plot(self.mse[:,0,1], label='training right')
+    #     axr.plot(self.mse[:,1,1], label='validation right')
+    #     axr.plot(self.mse[:,2,1], label='test right')
+    #     axr.set_title('MSE for '+self.model_name+'Right Ear Data')
+    #     for ax in axs:
+    #         ax.set_ylabel('MSE')
+    #         ax.legend(loc='best')
+    #         ax.grid(markevery=1)
+    #         ax.set_xlabel('Iteration')
+    #     return fig
 
 
 
@@ -426,11 +436,29 @@ class Network(object):
 
 class Custom_ModelCheckpoint(keras.callbacks.Callback):
 
-    def __init__(self, Network):
+    def __init__(self, Network, reduce_lr_callback):
         super().__init__()
         self.Network = Network
+        self.reduce_lr_callback = reduce_lr_callback
+        self.mse = [] #np.zeros((self.Network.epochs, self.Network.mse_shape[0], self.Network.mse_shape[1]))
 
     def on_epoch_end(self, epoch, logs=None):
         val_loss = logs.get("val_loss")
         Network.checkpoint(self.Network, val_loss)
         # print("\nEnd epoch {} of training; got val_loss: {}".format(epoch, logs["val_loss"]))
+
+        training_mse = [logs.get(f'{name}_loss') for name in self.Network.output_names]
+        valid_mse = [logs.get(f'val_{name}_loss') for name in self.Network.output_names]
+        test_mse = self.Network.get_loss(self.Network.test[0], self.Network.test[1])
+
+        self.mse.append((training_mse, valid_mse, test_mse))
+        self.Network.mse = self.mse
+        Network.write_mse(self.Network)
+
+        if self.reduce_lr_callback.wait + 1 >= self.reduce_lr_callback.patience:
+            if self.Network.model.optimizer.lr >= 0.000015: #self.reduce_lr_callback.min_lr:
+                self.Network.load_weights()
+            else:
+                self.model.stop_training = True
+
+

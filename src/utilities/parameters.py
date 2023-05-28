@@ -1,8 +1,8 @@
-branch = 'personalization-1.0.0'
-iterations = 20
-epochs = 20
-maglr_iterations = 25
-maglr_epochs = 25
+branch = 'personalization-1.0.2'
+iterations = 1 #20
+epochs = 400 #20
+maglr_iterations = 1 #25
+maglr_epochs = 400 #25
 #50 points for cipic
 points_per_ring = 50
 percent_test_points = .1 #0.005 #Gives single test data point for scut 
@@ -13,8 +13,9 @@ num_valid_points = int(round(percent_valid_points*points_per_ring,1))
 test_seed = 0
 validation_seed = 100
 batch_size = 32
-dropout = 0.2
+dropout = 0.0
 remove_mean = False
+initial_lr = 0.001
 
 
 # System Definitions
@@ -59,7 +60,7 @@ models_to_train_4 =  ['magtotal']
 # uncomment the line below if you want to predict other models
 # models_to_predict = ['magl', 'maglmean', 'maglstd'] # [ 'magr', 'magrmean', 'magrstd'] #['mag', 'magri', 'magfinal', 'magtotal'] #
 
-models_to_predict=  [ 'magtotal']  # ['magtotal'] # ['magl', 'magr'] # ,['magl', 'magr', 'maglmean', 'maglstd', 'magrmean', 'magrstd'] # 
+models_to_predict=   ['magtotal']   # ['mag', 'magl', 'magr', 'real', 'imag', 'realmean', 'realstd', 'imagmean', 'imagstd', 'magri', 'magfinal', 'magtotal']   #  ['magtotal']   # 
 models_to_eval = models_to_predict
 models_to_renormalize = [] #['mag', 'magri', 'magfinal']
 
