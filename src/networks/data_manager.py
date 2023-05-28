@@ -178,6 +178,7 @@ def format_inputs_outputs(pos, hrir, nn, ret_subjs=False, C_hrir=None):
     right_ear_div = [2.29, 0.98, 1.99, 2.20, 7.95, 3.52, 0.91, 1.26, 0.72, 0.87]
     ear_div = [2.24, 1.05, 2.10, 2.24, 7.61, 3.53, 0.86, 1.31, 0.78, 0.68, 2.29, 0.98, 1.99, 2.20, 7.95, 3.52, 0.91, 1.26, 0.72, 0.87]
     head_local = head_local / head_div
+    # head_local = np.delete(head_local, [13, 14], axis=2) ### be readi for removing hight and sitted higth
     ear_local[:,:,:,0] = ear_local[:,:,:,0] / left_ear_div
     ear_local[:,:,:,1] = ear_local[:,:,:,1] / right_ear_div
 
