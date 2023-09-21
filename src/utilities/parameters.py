@@ -15,7 +15,7 @@ validation_seed = 100
 batch_size = 32
 dropout = 0.0
 remove_mean = False
-initial_lr = 0.001
+initial_lr = 0.0005
 
 
 # System Definitions
