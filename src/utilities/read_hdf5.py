@@ -74,8 +74,13 @@ def getData(db, subjects, db_filepath='../datasets/', hrir_type='trunc_64', ear=
     subjs = []
     nn = []
     
-    pos_ds_loc = 'srcpos/' + hrir_type
-    nn_ds_loc = 'nn/' + hrir_type
+    # to work with "cipic_latest_Smoot_Dec_2020.hdf5" we need this change
+    if hrir_type not in ["trunc_64", "raw"]:
+        pos_ds_loc = 'srcpos/' + "trunc_64"
+        nn_ds_loc = 'nn/' + "trunc_64"
+    else:
+        pos_ds_loc = 'srcpos/' + hrir_type
+        nn_ds_loc = 'nn/' + hrir_type
     
     idx = 0
  
