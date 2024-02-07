@@ -1,4 +1,4 @@
-branch = 'personalization-1.0.1'
+branch = 'personalization-1.0.1' # sitting and standing higth are removed form this version of the code
 iterations = 20
 epochs = 20
 maglr_iterations = 25
