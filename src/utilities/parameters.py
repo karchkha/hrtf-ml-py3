@@ -54,8 +54,8 @@ ex: ['magri'] magri depends on all other networks. All networks will be trained
 ex: ['realdiff'] realdiff depends on 'real'. Only 'real' and 'realdiff' will be trained
 '''
 models_to_train_1 = ['magl', 'magr'] #['mag', 'magl', 'magr', 'real', 'imag', 'realmean', 'realstd', 'imagmean', 'imagstd'] 
-models_to_train_2 = [] #['magri']
-models_to_train_3 = [] #['magfinal']
+models_to_train_2 = ['magri']
+models_to_train_3 = ['magfinal']
 models_to_train_4 =  ['magtotal']
 # uncomment the line below if you want to predict other models
 # models_to_predict = ['magl', 'maglmean', 'maglstd'] # [ 'magr', 'magrmean', 'magrstd'] #['mag', 'magri', 'magfinal', 'magtotal'] #
