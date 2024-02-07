@@ -96,7 +96,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
         num_cols_per_dist = int(num_cols/num_dists)
         frac = .03
         lsd_offset =  0
-    if args['db'] == 'cipic':
+    if 'cipic' in args['db']: #if args['db'] == 'cipic':
         num_rows=50
         num_cols=25
         num_dists = 1
@@ -215,13 +215,13 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
             fig_lsdall_r, axes_r = plt.subplots(nrows=2, ncols=1)
             fig_lsdall_l.subplots_adjust(hspace=0, wspace=0)
             fig_lsdall_r.subplots_adjust(hspace=0, wspace=0)
-        if args['db'] == 'cipic':
+        if 'cipic' in args['db']: #if args['db'] == 'cipic':
             fig_lsdall_l, axes_l = plt.subplots(nrows=1, ncols=2)
             fig_lsdall_r, axes_r = plt.subplots(nrows=1, ncols=2)
             fig_lsd0l = plt.figure()
             fig_lsd0r= plt.figure()
 
-        if args['db'] == 'cipic':
+        if 'cipic' in args['db']: #if args['db'] == 'cipic':
             curr_zero_azi = np.squeeze(cart2sph(np.array(pos_inputs[zero_idxs])))
             zeroazi_plot_pos = [int(pos[0]) for pos in curr_zero_azi]
 
@@ -289,7 +289,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 axl.set_xticklabels([1.0, .9, .8, .7, .6, .5, .4, .3, .25, .2])
                 axl.set_xlabel("Radial Distance (m)")
                 axl.axes.get_yaxis().set_ticklabels([])
-            if args['db'] == 'cipic':
+            if 'cipic' in args['db']: #if args['db'] == 'cipic':
                 axl.set_yticks([8, 25, 42])
                 axl.set_yticklabels([0, 90, 180])
                 axl.set_xticks([0, 12, 24])
@@ -307,7 +307,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 axl_11k.set_xticklabels([1.0, .9, .8, .7, .6, .5, .4, .3, .25, .2])
                 axl_11k.set_xlabel("Radial Distance (m)")
                 axl_11k.axes.get_yaxis().set_ticklabels([])
-            if args['db'] == 'cipic':
+            if 'cipic' in args['db']: #if args['db'] == 'cipic':
                 axl_11k.set_yticks([8, 25, 42])
                 axl_11k.set_yticklabels([0, 90, 180])
                 axl_11k.set_xticks([0, 12, 24])
@@ -332,7 +332,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 print ("Left " + name + " test [full, <11k]: [" + str(lsds_l_test_avg) + ", "+ str(lsds_l_11k_test_avg) + "]")
 
             if lsd_0_azi:
-                if args['db'] == 'cipic':
+                if 'cipic' in args['db']: #if args['db'] == 'cipic':
                     axl0 = fig_lsd0l.add_subplot(111)
                     axl0.plot(ticks, lsds_l_1d, 'bo')
                     axl0.plot(ticks, lsds_l_1d, 'b', label="Full Bandwidth")
@@ -356,7 +356,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 axr.set_xticklabels([1.0, .9, .8, .7, .6, .5, .4, .3, .25, .2])
                 axr.set_xlabel("Radial Distance (m)")
                 axr.axes.get_yaxis().set_ticklabels([])
-            if args['db'] == 'cipic':
+            if 'cipic' in args['db']: #if args['db'] == 'cipic':
                 axr.set_yticks([8, 25, 42])
                 axr.set_yticklabels([0, 90, 180])
                 axr.set_xticks([0, 12, 24])
@@ -374,7 +374,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 axr_11k.set_xticklabels([1.0, .9, .8, .7, .6, .5, .4, .3, .25, .2])
                 axr_11k.set_xlabel("Radial Distance (m)")
                 axr_11k.axes.get_yaxis().set_ticklabels([])
-            if args['db'] == 'cipic':
+            if 'cipic' in args['db']: #if args['db'] == 'cipic':
                 axr_11k.set_yticks([8, 25, 42])
                 axr_11k.set_yticklabels([0, 90, 180])
                 axr_11k.set_xticks([0, 12, 24])
@@ -400,7 +400,7 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 print ("Right " + name + " test [full, <11k]: [" + str(lsds_r_test_avg) + ", "+ str(lsds_r_11k_test_avg) + "]")
 
             if lsd_0_azi:
-                if args['db'] == 'cipic':
+                if 'cipic' in args['db']: #if args['db'] == 'cipic':
                     axr0 = fig_lsd0r.add_subplot(111)
                     axr0.plot(ticks, lsds_r_1d, 'bo')
                     axr0.plot(ticks, lsds_r_1d, 'b', label="Full Bandwidth")
