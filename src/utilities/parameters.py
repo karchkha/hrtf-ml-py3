@@ -53,7 +53,7 @@ This will automatically take care of creating and training networks on which the
 ex: ['magri'] magri depends on all other networks. All networks will be trained
 ex: ['realdiff'] realdiff depends on 'real'. Only 'real' and 'realdiff' will be trained
 '''
-models_to_train_1 = ['magl', 'magr'] #['mag', 'magl', 'magr', 'real', 'imag', 'realmean', 'realstd', 'imagmean', 'imagstd'] 
+models_to_train_1 = ['mag', 'magl', 'magr', 'real', 'imag', 'realmean', 'realstd', 'imagmean', 'imagstd'] 
 models_to_train_2 = ['magri']
 models_to_train_3 = ['magfinal']
 models_to_train_4 =  ['magtotal']
