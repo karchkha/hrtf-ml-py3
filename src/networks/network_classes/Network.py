@@ -270,7 +270,7 @@ class Network(object):
             elif isinstance(self.loss_function, dict):
                 func = self.loss_function[on]
 
-            loss = weights[on] * func(actual, outputs[i])
+            loss = weights[on] * func(actual, outputs[i], in_dict[f'pos_inputs_{self.model_name}'])
 
             loss = np.mean(loss, axis=1)
             loss = np.mean(loss, axis=0)
@@ -331,15 +331,99 @@ class Network(object):
         for n in range(self.iterations): 
             print ("\nInteration: ", n)
             self.seed = self.seed + 1
-                     
-            self.model.fit( self.training[0],     
-                            self.training[1], 
-                            epochs= self.epochs, 
-                            batch_size = self.batch_size, 
-                            validation_data = self.validation,        
-                            shuffle = True,
-                            callbacks = [Model_ckpt], #Early_Stop],
-                            verbose=1) 
+            # self.model.fit( self.training[0],     
+            #                 self.training[1], 
+            #                 epochs= self.epochs, 
+            #                 batch_size = self.batch_size, 
+            #                 validation_data = self.validation,        
+            #                 shuffle = True,
+            #                 callbacks = [Model_ckpt], #Early_Stop],
+            #                 verbose=1) 
+
+            train_dataset = tf.data.Dataset.from_tensor_slices(self.training).shuffle(buffer_size=1024).batch(self.batch_size) #.take(20)
+            val_dataset = tf.data.Dataset.from_tensor_slices(self.validation).batch(self.batch_size) #.take(20)
+
+            # training Phase
+            for epoch in range(self.epochs):
+                for step, (x_batch_train, y_batch_train) in enumerate(train_dataset):
+                    with tf.GradientTape() as tape:
+                        outputs = self.model(x_batch_train, training=True)
+                        if len(self.output_names) == 1:
+                            outputs = [outputs]
+                        losses_dict = {}
+                        losses = []
+                        try:
+                            self.loss_weights
+                            weights = self.loss_weights
+                        except:
+                            weights = {}
+                            for on in self.output_names:
+                                weights[on] = 1
+
+                        for (i, on) in enumerate(self.output_names):
+                            actual = tf.cast(y_batch_train[on], dtype=tf.float32)
+                            if callable(self.loss_function):
+                                func = self.loss_function
+                            elif isinstance(self.loss_function, dict):
+                                func = self.loss_function[on]
+
+                            loss = weights[on] * func(actual, outputs[i], x_batch_train[f'pos_inputs_{self.model_name}'])
+
+                            loss = tf.reduce_mean(loss, )
+                            losses_dict[on]= loss
+                            losses.append(loss)
+
+
+                        sum_loss = tf.reduce_sum(losses)
+            
+
+                    # Print combined loss
+                    print(f"Epoch: {epoch}, step: {step}, total_loss: {sum_loss.numpy():.2f}, " + ", ".join([f"{k}: {v.numpy():.2f}" for k, v in losses_dict.items()]))
+
+
+                    grads = tape.gradient(sum_loss, self.model.trainable_weights)
+                    self.model.optimizer.apply_gradients(zip(grads, self.model.trainable_weights))
+
+                # Validation phase
+                val_sum_loss_list = []
+                for step, (x_batch_val, y_batch_val) in enumerate(val_dataset):  # Assuming val_dataset is your validation dataset
+                    val_outputs = self.model(x_batch_val, training=False)  # Inference mode
+                    if len(self.output_names) == 1:
+                        val_outputs = [val_outputs]  # Ensure val_outputs is always a list
+                    val_losses_dict = {}                  
+                    val_losses = []  # Store losses for the current batch
+                    for i, on in enumerate(self.output_names):
+                        actual_val = tf.cast(y_batch_val[on], dtype=tf.float32)
+                        if callable(self.loss_function):
+                            val_func = self.loss_function
+                        elif isinstance(self.loss_function, dict):
+                            val_func = self.loss_function[on]
+
+                        val_loss = val_func(actual_val, val_outputs[i], x_batch_train[f'pos_inputs_{self.model_name}'])
+                        val_loss = tf.reduce_mean(val_loss)  
+                    
+                        val_losses_dict[on]= val_loss
+                        val_losses.append(val_loss)
+                    
+                    val_sum_loss = tf.reduce_sum(val_losses)
+                    
+                    val_sum_loss_list.append(val_sum_loss) # Aggregate batch losses for final val loss calculation
+                    
+                    # Print combined loss
+                    print(f"Epoch: {epoch}, step: {step}, val_total_Loss: {val_sum_loss.numpy():.2f}, " + ", ".join([f"val_{k}: {v.numpy():.2f}" for k, v in val_losses_dict.items()]))                
+                
+                # Compute overall validation loss for the epoch
+                average_val_loss = tf.reduce_mean(val_sum_loss_list)
+                
+                # Print training and validation losses
+                print("Epoch:", epoch, "Total Training Loss:", sum_loss.numpy(), 
+                    "Total Validation Loss:", average_val_loss.numpy())
+                
+                # checkpointing callback in case of improved val_loss
+                self.checkpoint(average_val_loss.numpy())
+
+
+
             self.load_weights()
             training_mse, valid_mse, test_mse = self.get_mse()
             mse[n, 0, :] = training_mse

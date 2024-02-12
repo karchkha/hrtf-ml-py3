@@ -1,4 +1,5 @@
-branch = 'personalization-1.0.0'
+branch = 'personalization-1.1.0'
+# this branch is for testing and experimenting with loss function on lateral only
 iterations = 20
 epochs = 20
 maglr_iterations = 25

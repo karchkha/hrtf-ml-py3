@@ -202,8 +202,27 @@ def custom_loss_LSD_MSE(y, yhat):
 def custom_loss_ZERO(y, yhat):
     return (yhat-y)**2 * 0
 
-def custom_loss_MSE(y, yhat):
-    return (yhat-y)**2
+def custom_loss_MSE(y, yhat, pos):
+
+    retval = (yhat-y)**2
+
+    # ### masked 
+    # mask = tf.abs(pos[:, 2]) < 0.01
+    # mask = tf.cast(mask, tf.float32)
+    # retval = retval * tf.expand_dims(mask, axis=-1)  # Ensure mask is applied across the correct dimension
+
+    # weighted
+    weights = 1 - tf.abs(pos[:, 2])  # Compute the weight as 1 minus the absolute value of the last element of pos
+    weights = tf.expand_dims(weights, axis=-1)  # Make sure weights shape is compatible with squared_diff
+    weights = tf.cast(weights, tf.float32)
+    
+    # Apply the weights to the squared difference
+    retval = retval * weights
+
+
+    return retval
+
+    # return (yhat-y)**2
 
 
 
@@ -503,7 +522,7 @@ class custom_init_zeros_ident(ki.Initializer):
 #         return retval
         
 
-def custom_loss_normalized(y, yhat):
+def custom_loss_normalized(y, yhat, pos):
     if isinstance(y, tf.Tensor):
         y_mean = K.mean(y, axis=1, keepdims=True)
         y_zeromean = y - y_mean
@@ -527,6 +546,21 @@ def custom_loss_normalized(y, yhat):
 
     #retval = (yhat - y_norm)**2.0 
     retval = (yhat_norm - y_norm)**2.0 
+
+    # ### masked 
+    # mask = tf.abs(pos[:, 2]) < 0.01
+    # mask = tf.cast(mask, tf.float32)
+    # retval = retval * tf.expand_dims(mask, axis=-1)  # Ensure mask is applied across the correct dimension
+
+    # weighted
+    weights = 1 - tf.abs(pos[:, 2])  # Compute the weight as 1 minus the absolute value of the last element of pos
+    weights = tf.expand_dims(weights, axis=-1)  # Make sure weights shape is compatible with squared_diff
+    weights = tf.cast(weights, tf.float32)
+    
+    # Apply the weights to the squared difference
+    retval = retval * weights
+
+
     return retval
 
 
