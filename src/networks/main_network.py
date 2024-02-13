@@ -199,13 +199,13 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                     lsds_r_11k[j, i] = lsd(outputs[idx,:,1], curr_pred_data[0], 18)
                     if (lsds_r[j, i] > thresh):
                         high_idxs_r[idx] = lsds_r[j,i]
-                if idx in test_idxs:
-                    if left_right[0]:
-                        lsds_l_test.append(lsd(outputs[idx,:,0], curr_pred_data[0]))
-                        lsds_l_11k_test.append(lsd(outputs[idx,:,0], curr_pred_data[0], 18))
-                    if left_right[1]:
-                        lsds_r_test.append(lsd(outputs[idx,:,1], curr_pred_data[1]))
-                        lsds_r_11k_test.append(lsd(outputs[idx,:,1], curr_pred_data[1], 18))
+                # if idx in test_idxs:
+                #     if left_right[0]:
+                #         lsds_l_test.append(lsd(outputs[idx,:,0], curr_pred_data[0]))
+                #         lsds_l_11k_test.append(lsd(outputs[idx,:,0], curr_pred_data[0], 18))
+                #     if left_right[1]:
+                #         lsds_r_test.append(lsd(outputs[idx,:,1], curr_pred_data[1]))
+                #         lsds_r_11k_test.append(lsd(outputs[idx,:,1], curr_pred_data[1], 18))
         #fig_lsdall_l = plt.figure()
         #fig_lsdall_l_11k = plt.figure()
         #fig_lsdall_r = plt.figure()
@@ -328,8 +328,8 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 lsds_l_11k_test_avg.append(np.mean(lsds_l_11k_test[:])) #            axl.set_title('Full Bandwidth LSD')
 #            axl_11k.set_title('<11k LSD')
             print ("Left " + name + " [full, <11k]: [" + str(lsds_l_avg) + ", "+ str(lsds_l_11k_avg) + "]")
-            if test_idxs is not None:
-                print ("Left " + name + " test [full, <11k]: [" + str(lsds_l_test_avg) + ", "+ str(lsds_l_11k_test_avg) + "]")
+            # if test_idxs is not None:
+            #     print ("Left " + name + " test [full, <11k]: [" + str(lsds_l_test_avg) + ", "+ str(lsds_l_11k_test_avg) + "]")
 
             if lsd_0_azi:
                 if 'cipic' in args['db']: #if args['db'] == 'cipic':
@@ -396,8 +396,8 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                 lsds_r_test_avg.append(np.mean(lsds_r_test[:])) #            axl.set_title('Full Bandwidth LSD')
                 lsds_r_11k_test_avg.append(np.mean(lsds_r_11k_test[:])) #            axl.set_title('Full Bandwidth LSD')
             print ("Right " + name + " [full, <11k]: [" + str(lsds_r_avg) + ", " +  str(lsds_r_11k_avg) + "]")
-            if test_idxs is not None:
-                print ("Right " + name + " test [full, <11k]: [" + str(lsds_r_test_avg) + ", "+ str(lsds_r_11k_test_avg) + "]")
+            # if test_idxs is not None:
+            #     print ("Right " + name + " test [full, <11k]: [" + str(lsds_r_test_avg) + ", "+ str(lsds_r_11k_test_avg) + "]")
 
             if lsd_0_azi:
                 if 'cipic' in args['db']: #if args['db'] == 'cipic':
