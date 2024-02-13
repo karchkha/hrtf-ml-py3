@@ -399,7 +399,7 @@ class Network(object):
                         elif isinstance(self.loss_function, dict):
                             val_func = self.loss_function[on]
 
-                        val_loss = val_func(actual_val, val_outputs[i], x_batch_train[f'pos_inputs_{self.model_name}'])
+                        val_loss = val_func(actual_val, val_outputs[i], x_batch_val[f'pos_inputs_{self.model_name}'])
                         val_loss = tf.reduce_mean(val_loss)  
                     
                         val_losses_dict[on]= val_loss

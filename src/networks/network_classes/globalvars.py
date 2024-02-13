@@ -215,8 +215,6 @@ def custom_loss_MSE(y, yhat, pos):
     weights = 1 - tf.abs(pos[:, 2])  # Compute the weight as 1 minus the absolute value of the last element of pos
     weights = tf.expand_dims(weights, axis=-1)  # Make sure weights shape is compatible with squared_diff
     weights = tf.cast(weights, tf.float32)
-    
-    # Apply the weights to the squared difference
     retval = retval * weights
 
 
@@ -556,8 +554,6 @@ def custom_loss_normalized(y, yhat, pos):
     weights = 1 - tf.abs(pos[:, 2])  # Compute the weight as 1 minus the absolute value of the last element of pos
     weights = tf.expand_dims(weights, axis=-1)  # Make sure weights shape is compatible with squared_diff
     weights = tf.cast(weights, tf.float32)
-    
-    # Apply the weights to the squared difference
     retval = retval * weights
 
 
