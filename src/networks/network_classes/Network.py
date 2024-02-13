@@ -17,7 +17,8 @@ import network_classes.globalvars as globalvars
 from utilities.parameters import *
 
 
-class Network(object):
+class Network(tf.keras.Model):
+# class Network(object):
     def __init__(self, 
                 data, 
                 inputs=None, 
@@ -32,8 +33,12 @@ class Network(object):
                 both_ears=['l', 'r'],
                 loss_function=None, 
                 lr = initial_lr,
+                output_names = None, 
+                loss_weights = None,                
                 ):
-        
+        super(Network, self).__init__()
+        self.output_names = output_names
+        self.loss_weights = loss_weights
         self.lr = lr
         try:
             self.model_name
@@ -92,12 +97,14 @@ class Network(object):
         print("\nStarting:", self.model_name, "in", self.run_type, "mode!")       
         
         if type(data) != str:
-            try:
-                self.output_names
-  
-            except:
+
+            if self.output_names is None:
                 self.output_names = [self.model_name+self.created_by+'_l']
-                self.output_names.append(self.model_name+self.created_by+'_r')
+                self.output_names.append(self.model_name+self.created_by+'_r')  
+            else:
+                pass
+                # self.output_names = [self.model_name+self.created_by+'_l']
+                # self.output_names.append(self.model_name+self.created_by+'_r')
                 
             self.set_valid_training_inputs_outputs()
             self.set_test_inputs_outputs()
@@ -141,12 +148,13 @@ class Network(object):
             print ("Compiling model")
             optimizer = tf.keras.optimizers.Adam(learning_rate=self.lr) # it worked well with 0.0005
             #optimizer = tf.keras.optimizers.Adam(learning_rate=0.001) # orginal
-            try:
-                self.loss_weights
-                self.model.compile(optimizer=optimizer, loss=self.loss_function, loss_weights=self.loss_weights)
-            except:
-                self.model.compile(optimizer=optimizer, loss=self.loss_function)
 
+            # if self.loss_weights is not None:
+
+            #     self.model.compile(optimizer=optimizer, loss=self.loss_function, loss_weights=self.loss_weights)
+            # else:
+            #     self.model.compile(optimizer=optimizer, loss=self.loss_function)
+            self.compile(optimizer=optimizer, loss=None)
     def load_weights(self):
         if os.path.isfile(self.weightspath):
             print ("Loading weights: " + self.weightspath)
@@ -255,10 +263,10 @@ class Network(object):
         if len(self.output_names) == 1:
             outputs = np.expand_dims(outputs, axis=0)
         losses = []
-        try:
-            self.loss_weights
+
+        if self.loss_weights is not None:
             weights = self.loss_weights
-        except:
+        else:
             weights = {}
             for on in self.output_names:
                 weights[on] = 1
@@ -303,9 +311,9 @@ class Network(object):
 
     def checkpoint(self, validation_loss):
         # SDY Jury is stil out on which validation will be better
-        # score = self.model.evaluate(self.validation[0], self.validation[1], verbose=1) 
+        # score = self.model.evaluate_local(self.validation[0], self.validation[1], verbose=1) 
 
-        #score = self.model.evaluate(self.training[0], self.training[1], verbose=1) 
+        #score = self.model.evaluate_local(self.training[0], self.training[1], verbose=1) 
         #validation_loss = score[0]
 
         print ("\nvalidation score = ", validation_loss)
@@ -320,7 +328,103 @@ class Network(object):
             self.write_weights()
             self.write_val_loss()
 
-        
+    def call(self, inputs, training=True):
+        return self.model(inputs, training)
+
+    def train_step(self, data):
+        # Unpack the data. Its structure depends on your model and
+        # on what you pass to `fit()`.
+        x, y = data
+
+        with tf.GradientTape() as tape:
+            y_pred = self(x, training=True)  # Forward pass
+
+            # Your custom loss calculation goes here
+            if len(self.output_names) == 1:
+                y_pred = [y_pred]
+            losses_dict = {}
+            losses = []
+            if self.loss_weights is not None:
+
+                weights = self.loss_weights
+            else:
+                weights = {}
+                for on in self.output_names:
+                    weights[on] = 1
+
+            for (i, on) in enumerate(self.output_names):
+                actual = tf.cast(y[on], dtype=tf.float32)
+                if callable(self.loss_function):
+                    func = self.loss_function
+                elif isinstance(self.loss_function, dict):
+                    func = self.loss_function[on]
+
+                loss = weights[on] * func(actual, y_pred[i], x[f'pos_inputs_{self.model_name}'])
+
+                loss = tf.reduce_mean(loss)
+                losses_dict[on]= loss
+                losses.append(loss)
+
+
+            sum_loss = tf.reduce_sum(losses)
+
+        # Compute gradients
+        trainable_vars = self.trainable_variables
+        gradients = tape.gradient(sum_loss, trainable_vars)
+
+        # Update weights
+        self.optimizer.apply_gradients(zip(gradients, trainable_vars))
+    
+        # Add total loss to the dictionary
+        losses_dict_combined = {'loss': sum_loss, **losses_dict}
+
+        # Return a dict mapping metric names to current value
+        return losses_dict_combined 
+
+    def test_step(self, data):
+        # Unpack the data
+        x, y = data
+
+        # Forward pass
+        y_pred = self(x, training=False)  # Ensure the model is in inference mode
+
+        # Similar to train_step, handle the case of a single output
+        if len(self.output_names) == 1:
+            y_pred = [y_pred]
+        losses_dict = {}
+        losses = []
+        if self.loss_weights is not None:
+            weights = self.loss_weights
+        else:
+            weights = {on: 1 for on in self.output_names}
+
+        # Calculate losses for each output
+        for (i, on) in enumerate(self.output_names):
+            actual = tf.cast(y[on], dtype=tf.float32)
+            if callable(self.loss_function):
+                func = self.loss_function
+            elif isinstance(self.loss_function, dict):
+                func = self.loss_function[on]
+
+            # Compute the loss without the gradient tape and without multiplying by weights if not training
+            loss = func(actual, y_pred[i], x[f'pos_inputs_{self.model_name}'])
+            loss = tf.reduce_mean(loss)
+            losses_dict[on] = loss
+            losses.append(loss)
+
+        # Sum up the total loss
+        total_loss = tf.reduce_sum(losses)
+
+        # Update metrics here if needed
+        # For example, if you have self.custom_accuracy as a metric
+        # self.custom_accuracy.update_state(y, y_pred)
+
+        # Include total_loss first in the dictionary
+        losses_dict_combined = {'loss': total_loss, **losses_dict}
+
+        return losses_dict_combined
+
+
     def train(self):
         print ("Begin training")
         
@@ -331,96 +435,14 @@ class Network(object):
         for n in range(self.iterations): 
             print ("\nInteration: ", n)
             self.seed = self.seed + 1
-            # self.model.fit( self.training[0],     
-            #                 self.training[1], 
-            #                 epochs= self.epochs, 
-            #                 batch_size = self.batch_size, 
-            #                 validation_data = self.validation,        
-            #                 shuffle = True,
-            #                 callbacks = [Model_ckpt], #Early_Stop],
-            #                 verbose=1) 
-
-            train_dataset = tf.data.Dataset.from_tensor_slices(self.training).shuffle(buffer_size=1024).batch(self.batch_size) #.take(20)
-            val_dataset = tf.data.Dataset.from_tensor_slices(self.validation).batch(self.batch_size) #.take(20)
-
-            # training Phase
-            for epoch in range(self.epochs):
-                for step, (x_batch_train, y_batch_train) in enumerate(train_dataset):
-                    with tf.GradientTape() as tape:
-                        outputs = self.model(x_batch_train, training=True)
-                        if len(self.output_names) == 1:
-                            outputs = [outputs]
-                        losses_dict = {}
-                        losses = []
-                        try:
-                            self.loss_weights
-                            weights = self.loss_weights
-                        except:
-                            weights = {}
-                            for on in self.output_names:
-                                weights[on] = 1
-
-                        for (i, on) in enumerate(self.output_names):
-                            actual = tf.cast(y_batch_train[on], dtype=tf.float32)
-                            if callable(self.loss_function):
-                                func = self.loss_function
-                            elif isinstance(self.loss_function, dict):
-                                func = self.loss_function[on]
-
-                            loss = weights[on] * func(actual, outputs[i], x_batch_train[f'pos_inputs_{self.model_name}'])
-
-                            loss = tf.reduce_mean(loss, )
-                            losses_dict[on]= loss
-                            losses.append(loss)
-
-
-                        sum_loss = tf.reduce_sum(losses)
-            
-
-                    # Print combined loss
-                    print(f"Epoch: {epoch}, step: {step}, total_loss: {sum_loss.numpy():.2f}, " + ", ".join([f"{k}: {v.numpy():.2f}" for k, v in losses_dict.items()]))
-
-
-                    grads = tape.gradient(sum_loss, self.model.trainable_weights)
-                    self.model.optimizer.apply_gradients(zip(grads, self.model.trainable_weights))
-
-                # Validation phase
-                val_sum_loss_list = []
-                for step, (x_batch_val, y_batch_val) in enumerate(val_dataset):  # Assuming val_dataset is your validation dataset
-                    val_outputs = self.model(x_batch_val, training=False)  # Inference mode
-                    if len(self.output_names) == 1:
-                        val_outputs = [val_outputs]  # Ensure val_outputs is always a list
-                    val_losses_dict = {}                  
-                    val_losses = []  # Store losses for the current batch
-                    for i, on in enumerate(self.output_names):
-                        actual_val = tf.cast(y_batch_val[on], dtype=tf.float32)
-                        if callable(self.loss_function):
-                            val_func = self.loss_function
-                        elif isinstance(self.loss_function, dict):
-                            val_func = self.loss_function[on]
-
-                        val_loss = val_func(actual_val, val_outputs[i], x_batch_val[f'pos_inputs_{self.model_name}'])
-                        val_loss = tf.reduce_mean(val_loss)  
-                    
-                        val_losses_dict[on]= val_loss
-                        val_losses.append(val_loss)
-                    
-                    val_sum_loss = tf.reduce_sum(val_losses)
-                    
-                    val_sum_loss_list.append(val_sum_loss) # Aggregate batch losses for final val loss calculation
-                    
-                    # Print combined loss
-                    print(f"Epoch: {epoch}, step: {step}, val_total_Loss: {val_sum_loss.numpy():.2f}, " + ", ".join([f"val_{k}: {v.numpy():.2f}" for k, v in val_losses_dict.items()]))                
-                
-                # Compute overall validation loss for the epoch
-                average_val_loss = tf.reduce_mean(val_sum_loss_list)
-                
-                # Print training and validation losses
-                print("Epoch:", epoch, "Total Training Loss:", sum_loss.numpy(), 
-                    "Total Validation Loss:", average_val_loss.numpy())
-                
-                # checkpointing callback in case of improved val_loss
-                self.checkpoint(average_val_loss.numpy())
+            self.fit(self.training[0],     
+                    self.training[1], 
+                    epochs= self.epochs, 
+                    batch_size = self.batch_size, 
+                    validation_data = self.validation,        
+                    shuffle = True,
+                    callbacks = [Model_ckpt], #Early_Stop],
+                    verbose=1) 
 
 
 
@@ -439,7 +461,7 @@ class Network(object):
         self.write_model()
         
 
-    def evaluate(self):
+    def evaluate_local(self):
        fig = plt.figure()
        self.load_mse()
     #    print(np.shape(self.mse))
@@ -487,7 +509,7 @@ class Network(object):
            return fig
 
 
-    # def evaluate(self):
+    # def evaluate_local(self):
     #     fig = plt.figure()
     #     axl = fig.add_subplot(2,1,1)
     #     axr = fig.add_subplot(2,1,2)

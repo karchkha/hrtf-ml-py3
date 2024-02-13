@@ -39,13 +39,14 @@ class NetworkMagTotal(Network):
             self.data = data
             self.model_name = list(self.data.keys())[0]
         self.model_details = model_details
-        self.output_names = []
-        self.output_names.append(self.model_name+'_l')
-        self.output_names.append(self.model_name+'_r')
-        self.output_names.append(self.model_name+'mean_l')
-        self.output_names.append(self.model_name+'mean_r')
-        self.output_names.append(self.model_name+'std_l')
-        self.output_names.append(self.model_name+'std_r')
+        # self.output_names = []
+        self.output_names = [self.model_name+'_l', self.model_name+'_r', self.model_name+'mean_l', self.model_name+'mean_r', self.model_name+'std_l', self.model_name+'std_r']
+        # self.output_names.append(self.model_name+'_l')
+        # self.output_names.append(self.model_name+'_r')
+        # self.output_names.append(self.model_name+'mean_l')
+        # self.output_names.append(self.model_name+'mean_r')
+        # self.output_names.append(self.model_name+'std_l')
+        # self.output_names.append(self.model_name+'std_r')
 #        self.output_names.append(self.model_name+'norm_l')
 #        self.output_names.append(self.model_name+'norm_r')
         loss_functions = {}
@@ -65,15 +66,16 @@ class NetworkMagTotal(Network):
         loss_functions[self.output_names[5]] = globalvars.custom_loss_MSE
 #        loss_functions[self.output_names[6]] = globalvars.custom_loss_normalized
 #        loss_functions[self.output_names[7]] = globalvars.custom_loss_normalized
-        self.loss_weights = {}
-        self.loss_weights[self.output_names[0]] = 1.0
-        self.loss_weights[self.output_names[1]] = 1.0
-        self.loss_weights[self.output_names[2]] = 1.0
-        self.loss_weights[self.output_names[3]] = 1.0
-        self.loss_weights[self.output_names[4]] = 1.0
-        self.loss_weights[self.output_names[5]] = 1.0
+        self.loss_weights = {
+        self.output_names[0]: 1.0,
+        self.output_names[1]: 1.0,
+        self.output_names[2]: 1.0,
+        self.output_names[3]: 1.0,
+        self.output_names[4]: 1.0,
+        self.output_names[5]: 1.0,
 #        self.loss_weights[self.output_names[6]] = 3.0
 #        self.loss_weights[self.output_names[7]] = 3.0
+        }
         try:
             super().__init__(# Network.__init__(self, 
                 data, inputs, input_layers,
@@ -84,7 +86,10 @@ class NetworkMagTotal(Network):
                 iterations=iterations, 
                 batch_size=batch_size,
                 init_valid_seed=init_valid_seed,
-                loss_function=loss_functions)
+                loss_function=loss_functions,
+                output_names = self.output_names,
+                loss_weights = self.loss_weights
+            )
         except Exception as err:
             print ("Failed loading previously trained model. Creating now.")
             if isinstance(input_networks, dict):
@@ -102,7 +107,9 @@ class NetworkMagTotal(Network):
                 iterations=iterations, 
                 batch_size=batch_size,
                 init_valid_seed=init_valid_seed,
-                loss_function=loss_functions) # globalvars.custom_loss_magtotal) #
+                loss_function=loss_functions,
+                output_names = self.output_names,
+                loss_weights = self.loss_weights) # globalvars.custom_loss_magtotal) #
 
     def load_external_model(self, network_name):
         
@@ -288,7 +295,7 @@ class NetworkMagTotal(Network):
     def train(self):
         super().train() # Network.train(self)
 
-    def evaluate(self):
-        super().evaluate() # Network.evaluate(self)
+    def evaluate_local(self):
+        super().evaluate_local() # Network.evaluate_local(self)
 
 

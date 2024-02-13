@@ -70,5 +70,5 @@ class NetworkRealstd(Network):
     def train(self):
         super().train() # Network.train(self)
 
-    def evaluate(self):
-        super().evaluate() # Network.evaluate(self)
+    def evaluate_local(self):
+        super().evaluate_local() # Network.evaluate_local(self)

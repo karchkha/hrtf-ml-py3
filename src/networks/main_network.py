@@ -722,7 +722,7 @@ def main():
         for name, mod in all_models.items():
             
             if name in models_to_eval_loc:
-                mod.evaluate()
+                mod.evaluate_local()
         plt.show()
         for i in plt.get_fignums():
             plt.figure(i)

@@ -57,5 +57,5 @@ class NetworkMagstd(Network):
     def train(self):
         Network.train(self)
 
-    def evaluate(self):
-        Network.evaluate(self)
+    def evaluate_local(self):
+        Network.evaluate_local(self)

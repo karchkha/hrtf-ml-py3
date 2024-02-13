@@ -24,10 +24,10 @@ class NetworkMagR(Network):
         else:
             self.data = data
             self.model_name = list(self.data.keys())[0]
-        self.output_names = []
-        self.output_names.append(self.model_name)
-        self.output_names.append(self.model_name+'mean')
-        self.output_names.append(self.model_name+'std')
+        self.output_names = [self.model_name, self.model_name+'mean', self.model_name+'std']
+        # self.output_names.append(self.model_name)
+        # self.output_names.append(self.model_name+'mean')
+        # self.output_names.append(self.model_name+'std')
         loss_functions = {}
 
         loss_functions[self.output_names[0]] = globalvars.custom_loss_MSE
@@ -40,10 +40,15 @@ class NetworkMagR(Network):
         # loss function for std
 #        loss_functions[self.output_names[2]] = globalvars.custom_loss_MSEOverY2
         loss_functions[self.output_names[2]] = globalvars.custom_loss_MSE
-        self.loss_weights = {}
-        self.loss_weights[self.output_names[0]] = 0.1
-        self.loss_weights[self.output_names[1]] = 1.0
-        self.loss_weights[self.output_names[2]] = 1.0
+        self.loss_weights = {
+            self.output_names[0]: 0.1,
+            self.output_names[1]: 1.0,
+            self.output_names[2]: 1.0
+        }      
+        # self.loss_weights = {}
+        # self.loss_weights[self.output_names[0]] = 0.1
+        # self.loss_weights[self.output_names[1]] = 1.0
+        # self.loss_weights[self.output_names[2]] = 1.0
 
         super().__init__( #Network.__init__(self, 
             data, inputs, input_layers,
@@ -55,7 +60,10 @@ class NetworkMagR(Network):
             batch_size=batch_size,
             init_valid_seed=init_valid_seed,
             both_ears=['r'],
-            loss_function=loss_functions)
+            loss_function=loss_functions,
+            output_names = self.output_names,
+            loss_weights = self.loss_weights
+            )
 
     def make_model(self):
         init_seed = init_seed = np.random.randint(0,200,1)[0] #100
@@ -131,5 +139,5 @@ class NetworkMagR(Network):
     def train(self):
         super().train() # Network.train(self)
 
-    def evaluate(self):
-        super().evaluate() # Network.evaluate(self)
+    def evaluate_local(self):
+        super().evaluate_local() # Network.evaluate_local(self)
