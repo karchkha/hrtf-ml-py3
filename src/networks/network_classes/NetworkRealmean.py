@@ -29,7 +29,9 @@ class NetworkRealmean(Network):
             iterations=iterations, 
             batch_size=batch_size,
             init_valid_seed=init_valid_seed,
-            loss_function=globalvars.custom_loss_MSE)
+            # loss_function=globalvars.custom_loss_MSE,
+            loss_function = globalvars.custom_loss_meannetworks
+            )
 
     def make_model(self):
         init_seed=100
@@ -65,11 +67,11 @@ class NetworkRealmean(Network):
             self.output_dict[k+'_l'] = {'training': d.getTrainingMean()[:,:,0], 'valid': d.getValidMean()[:,:,0], 'test': d.getTestMean()[:,:,0]}
             self.output_dict[k+'_r'] = {'training': d.getTrainingMean()[:,:,1], 'valid': d.getValidMean()[:,:,1], 'test': d.getTestMean()[:,:,1]}
 
-    def compile_model(self):
-        checkpoint = ModelCheckpoint('./weights/'+self.model_details+'_'+self.model_name, verbose=1, save_best_only=True)
-        self.callbacks_list = [checkpoint]
-        self.model.compile(optimizer='adam',
-                loss=globalvars.custom_loss_meannetworks)
+    # def compile_model(self):
+    #     checkpoint = ModelCheckpoint('./weights/'+self.model_details+'_'+self.model_name, verbose=1, save_best_only=True)
+    #     self.callbacks_list = [checkpoint]
+    #     self.model.compile(optimizer='adam',
+    #             loss=globalvars.custom_loss_meannetworks)
 
     def train(self):
         super().train() # Network.train(self)

@@ -34,12 +34,14 @@ class Network(tf.keras.Model):
                 loss_function=None, 
                 lr = initial_lr,
                 output_names = None, 
-                loss_weights = None,                
+                loss_weights = None, 
+                mask_type = mask_type,               
                 ):
         super(Network, self).__init__()
         self.output_names = output_names
         self.loss_weights = loss_weights
         self.lr = lr
+        self.mask_type = mask_type
         try:
             self.model_name
         except:
@@ -278,8 +280,8 @@ class Network(tf.keras.Model):
             elif isinstance(self.loss_function, dict):
                 func = self.loss_function[on]
 
-            loss = weights[on] * func(actual, outputs[i], in_dict[f'pos_inputs_{self.model_name}'])
-
+            loss = weights[on] * func(actual, outputs[i])
+            loss = self.mask_loss(loss, in_dict[f'pos_inputs_{self.model_name}'], on, mask_type = self.mask_type)
             loss = np.mean(loss, axis=1)
             loss = np.mean(loss, axis=0)
             losses.append(loss)
@@ -359,8 +361,8 @@ class Network(tf.keras.Model):
                 elif isinstance(self.loss_function, dict):
                     func = self.loss_function[on]
 
-                loss = weights[on] * func(actual, y_pred[i], x[f'pos_inputs_{self.model_name}'])
-
+                loss = weights[on] * func(actual, y_pred[i])
+                loss = self.mask_loss(loss, x[f'pos_inputs_{self.model_name}'], on, mask_type = self.mask_type)
                 loss = tf.reduce_mean(loss)
                 losses_dict[on]= loss
                 losses.append(loss)
@@ -406,8 +408,9 @@ class Network(tf.keras.Model):
             elif isinstance(self.loss_function, dict):
                 func = self.loss_function[on]
 
-            # Compute the loss without the gradient tape and without multiplying by weights if not training
-            loss = func(actual, y_pred[i], x[f'pos_inputs_{self.model_name}'])
+            # Compute the loss without the gradient tape
+            loss = weights[on] * func(actual, y_pred[i])    
+            loss = self.mask_loss(loss, x[f'pos_inputs_{self.model_name}'], on, mask_type = self.mask_type)
             loss = tf.reduce_mean(loss)
             losses_dict[on] = loss
             losses.append(loss)
@@ -424,6 +427,47 @@ class Network(tf.keras.Model):
 
         return losses_dict_combined
 
+    def mask_loss(self, loss, pos, on, mask_type=None):
+
+        if mask_type=="lateral_masked":
+            ### masked 
+            mask = tf.abs(pos[:, 2]) < 0.01
+            mask = tf.cast(mask, tf.float32)
+            retval = loss * tf.expand_dims(mask, axis=-1)  # Ensure mask is applied across the correct dimension
+
+        elif mask_type=="lateral_weighted":
+            # weighted
+            weights = 1 - tf.abs(pos[:, 2])  # Compute the weight as 1 minus the absolute value of the last element of pos
+            weights = tf.expand_dims(weights, axis=-1)  # Make sure weights shape is compatible with squared_diff
+            weights = tf.cast(weights, tf.float32)
+            retval = loss * weights
+
+        elif mask_type=="left_right_masked":
+
+            # Create masks for left (including center) and right (including center)
+            if on in ['real_l', 'realmean_l','realstd_l', 'imag_l','imagmean_l','imagstd_l','mag_l', 'magl', 'maglmean', 'maglstd', 'magri_l','magfinal_l', 'magtotal_l', 'magtotalmean_l', 'magtotalstd_l']:
+                mask = tf.cast(pos[:, 1] >= 0, dtype=tf.float32)  # Include center in left
+            elif on in ['real_r', 'realmean_r', 'realstd_r', 'imag_r', 'imagmean_r', 'imagstd_r', 'mag_r', 'magr', 'magrmean', 'magrstd', 'magri_r', 'magfinal_r', 'magtotal_r',  'magtotalmean_r',  'magtotalstd_r']:
+                mask =  tf.cast(pos[:, 1] <= 0, dtype=tf.float32)  # Include center in right
+
+            retval = loss * tf.expand_dims(mask, axis=-1)
+
+        elif mask_type=="left_right_weighted":
+
+            retval = loss # TODO: need to implement this version yet
+
+            # # Create masks for left (including center) and right (including center)
+            # if on in ['real_l', 'realmean_l','realstd_l', 'imag_l','imagmean_l','imagstd_l','mag_l', 'magl', 'maglmean', 'maglstd', 'magri_l','magfinal_l', 'magtotal_l', 'magtotalmean_l', 'magtotalstd_l']:
+            #     mask = tf.cast(pos[:, 1] >= 0, dtype=tf.float32)  # Include center in left
+            # elif on in ['real_r', 'realmean_r', 'realstd_r', 'imag_r', 'imagmean_r', 'imagstd_r', 'mag_r', 'magr', 'magrmean', 'magrstd', 'magri_r', 'magfinal_r', 'magtotal_r',  'magtotalmean_r',  'magtotalstd_r']:
+            #     mask =  tf.cast(pos[:, 1] <= 0, dtype=tf.float32)  # Include center in right
+
+            # retval = loss * tf.expand_dims(mask, axis=-1)
+
+        else:
+            retval = loss
+
+        return retval
 
     def train(self):
         print ("Begin training")
