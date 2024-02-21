@@ -30,8 +30,8 @@ class NetworkImagmean(Network):
             iterations=iterations, 
             batch_size=batch_size,
             init_valid_seed=init_valid_seed,
-            # loss_function=globalvars.custom_loss_MSE,
-            loss_function=globalvars.custom_loss_meannetworks,
+            loss_function=globalvars.custom_loss_MSE,
+            # loss_function=globalvars.custom_loss_meannetworks,
             )
 
     def make_model(self):

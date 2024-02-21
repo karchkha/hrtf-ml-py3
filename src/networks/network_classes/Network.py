@@ -454,15 +454,13 @@ class Network(tf.keras.Model):
 
         elif mask_type=="left_right_weighted":
 
-            retval = loss # TODO: need to implement this version yet
+            # Create masks for left (including center) and right (including center)
+            if on in ['real_l', 'realmean_l','realstd_l', 'imag_l','imagmean_l','imagstd_l','mag_l', 'magl', 'maglmean', 'maglstd', 'magri_l','magfinal_l', 'magtotal_l', 'magtotalmean_l', 'magtotalstd_l']:
+                mask = tf.cast(tf.clip_by_value((pos[:, 1] + 1) / 2, 0, 1), dtype=tf.float32)  # linear decline
+            elif on in ['real_r', 'realmean_r', 'realstd_r', 'imag_r', 'imagmean_r', 'imagstd_r', 'mag_r', 'magr', 'magrmean', 'magrstd', 'magri_r', 'magfinal_r', 'magtotal_r',  'magtotalmean_r',  'magtotalstd_r']:
+                mask =   tf.cast(tf.clip_by_value((1 - pos[:, 1]) / 2, 0, 1), dtype=tf.float32)  # linear decline
 
-            # # Create masks for left (including center) and right (including center)
-            # if on in ['real_l', 'realmean_l','realstd_l', 'imag_l','imagmean_l','imagstd_l','mag_l', 'magl', 'maglmean', 'maglstd', 'magri_l','magfinal_l', 'magtotal_l', 'magtotalmean_l', 'magtotalstd_l']:
-            #     mask = tf.cast(pos[:, 1] >= 0, dtype=tf.float32)  # Include center in left
-            # elif on in ['real_r', 'realmean_r', 'realstd_r', 'imag_r', 'imagmean_r', 'imagstd_r', 'mag_r', 'magr', 'magrmean', 'magrstd', 'magri_r', 'magfinal_r', 'magtotal_r',  'magtotalmean_r',  'magtotalstd_r']:
-            #     mask =  tf.cast(pos[:, 1] <= 0, dtype=tf.float32)  # Include center in right
-
-            # retval = loss * tf.expand_dims(mask, axis=-1)
+            retval = loss * tf.expand_dims(mask, axis=-1)
 
         else:
             retval = loss
