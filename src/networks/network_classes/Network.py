@@ -462,6 +462,24 @@ class Network(tf.keras.Model):
 
             retval = loss * tf.expand_dims(mask, axis=-1)
 
+        elif mask_type=="combined_weighted":
+            # First, compute the lateral weight
+            lateral_weights = 1 - tf.abs(pos[:, 2])
+            lateral_weights = tf.expand_dims(lateral_weights, axis=-1)
+            lateral_weights = tf.cast(lateral_weights, tf.float32)
+            
+            # Next, compute the left/right weight based on the `on` parameter
+            if on in ['real_l', 'realmean_l','realstd_l', 'imag_l','imagmean_l','imagstd_l','mag_l', 'magl', 'maglmean', 'maglstd', 'magri_l','magfinal_l', 'magtotal_l', 'magtotalmean_l', 'magtotalstd_l']:
+                left_right_weights = tf.cast(tf.clip_by_value((pos[:, 1] + 1) / 2, 0, 1), dtype=tf.float32)
+            elif on in ['real_r', 'realmean_r', 'realstd_r', 'imag_r', 'imagmean_r', 'imagstd_r', 'mag_r', 'magr', 'magrmean', 'magrstd', 'magri_r', 'magfinal_r', 'magtotal_r',  'magtotalmean_r',  'magtotalstd_r']:
+                left_right_weights = tf.cast(tf.clip_by_value((1 - pos[:, 1]) / 2, 0, 1), dtype=tf.float32)
+            
+            # Combine the lateral and left/right weights
+            combined_weights = lateral_weights * tf.expand_dims(left_right_weights, axis=-1) 
+            
+            # Apply the combined weights to the loss
+            retval = loss * combined_weights
+
         else:
             retval = loss
 
