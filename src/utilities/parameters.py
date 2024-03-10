@@ -1,8 +1,8 @@
 branch = 'personalization-1.1.1'
 # this branch is for testing and experimenting with loss function on with different types of masking ans weighting
 # uses tf.keras.model to speed up training
-iterations = 20
-epochs = 20
+iterations = 2 #0
+epochs = 2#0
 maglr_iterations = 25
 maglr_epochs = 25
 #50 points for cipic
@@ -18,7 +18,7 @@ batch_size = 32
 dropout = 0.0
 remove_mean = False
 initial_lr = 0.0005
-mask_type = None #"left_right_weighted" # "combined_weighted" # "lateral_masked" #  "lateral_weighted" # "left_right_masked" # "left_right_weighted" #
+mask_type = None # None #"left_right_weighted" # "combined_weighted" # "lateral_masked" #  "lateral_weighted" # "left_right_masked" # "left_right_weighted" # "left_right_weighted_reverted" # "single_point" #
 
 
 # System Definitions

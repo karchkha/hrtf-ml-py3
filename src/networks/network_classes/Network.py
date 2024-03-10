@@ -16,6 +16,7 @@ from time import sleep
 import network_classes.globalvars as globalvars
 from utilities.parameters import *
 
+# tf.config.experimental_run_functions_eagerly(True)
 
 class Network(tf.keras.Model):
 # class Network(object):
@@ -114,6 +115,11 @@ class Network(tf.keras.Model):
             self.load_mse()
             self.load_val_loss()
 
+
+       # Initialize a loss tracker for each output
+        loss_names = ["loss"] + self.output_names
+        self.loss_trackers = {loss_name: tf.keras.metrics.Mean(name=f"{loss_name}") for loss_name in loss_names}
+
         self.load_model()
         self.compile_model()
         self.load_weights()
@@ -140,7 +146,7 @@ class Network(tf.keras.Model):
                 self.trained = True
         else:
             self.make_model()
-            plot_model(self.model, to_file=self.graphpath)
+            # plot_model(self.model, to_file=self.graphpath)
             self.trained = False
             print("Starting model ", self.model_name, " weights from scratch")
 
@@ -313,10 +319,10 @@ class Network(tf.keras.Model):
 
     def checkpoint(self, validation_loss):
         # SDY Jury is stil out on which validation will be better
-        # score = self.model.evaluate_local(self.validation[0], self.validation[1], verbose=1) 
+        # score = self.evaluate(self.validation[0], self.validation[1], verbose=1) 
 
-        #score = self.model.evaluate_local(self.training[0], self.training[1], verbose=1) 
-        #validation_loss = score[0]
+        # #score = self.model.evaluate_local(self.training[0], self.training[1], verbose=1) 
+        # validation_loss = score[0]
 
         print ("\nvalidation score = ", validation_loss)
         if len(self.val_loss) == 0:
@@ -380,8 +386,14 @@ class Network(tf.keras.Model):
         # Add total loss to the dictionary
         losses_dict_combined = {'loss': sum_loss, **losses_dict}
 
-        # Return a dict mapping metric names to current value
-        return losses_dict_combined 
+        # return losses_dict_combined
+
+        # Update each loss tracker
+        for name, loss in losses_dict_combined.items():
+            self.loss_trackers[name].update_state(loss)
+
+        # Prepare return value: aggregate current state of each loss tracker
+        return {name: tracker.result() for name, tracker in self.loss_trackers.items()}
 
     def test_step(self, data):
         # Unpack the data
@@ -425,7 +437,14 @@ class Network(tf.keras.Model):
         # Include total_loss first in the dictionary
         losses_dict_combined = {'loss': total_loss, **losses_dict}
 
-        return losses_dict_combined
+        # return losses_dict_combined
+
+        # Update each loss tracker
+        for name, loss in losses_dict_combined.items():
+            self.loss_trackers[name].update_state(loss)
+
+        # Prepare return value: aggregate current state of each loss tracker
+        return {name: tracker.result() for name, tracker in self.loss_trackers.items()}
 
     def mask_loss(self, loss, pos, on, mask_type=None):
 
@@ -462,6 +481,16 @@ class Network(tf.keras.Model):
 
             retval = loss * tf.expand_dims(mask, axis=-1)
 
+        elif mask_type=="left_right_weighted_reverted":
+
+            # Create masks for left (including center) and right (including center)
+            if on in ['real_l', 'realmean_l','realstd_l', 'imag_l','imagmean_l','imagstd_l','mag_l', 'magl', 'maglmean', 'maglstd', 'magri_l','magfinal_l', 'magtotal_l', 'magtotalmean_l', 'magtotalstd_l']:
+                mask = tf.cast(tf.clip_by_value((1 - pos[:, 1]) / 2, 0, 1), dtype=tf.float32)  # linear decline
+            elif on in ['real_r', 'realmean_r', 'realstd_r', 'imag_r', 'imagmean_r', 'imagstd_r', 'mag_r', 'magr', 'magrmean', 'magrstd', 'magri_r', 'magfinal_r', 'magtotal_r',  'magtotalmean_r',  'magtotalstd_r']:
+                mask =   tf.cast(tf.clip_by_value((pos[:, 1] + 1) / 2, 0, 1), dtype=tf.float32)  # linear decline
+
+            retval = loss * tf.expand_dims(mask, axis=-1)
+
         elif mask_type=="combined_weighted":
             # First, compute the lateral weight
             lateral_weights = 1 - tf.abs(pos[:, 2])
@@ -479,6 +508,24 @@ class Network(tf.keras.Model):
             
             # Apply the combined weights to the loss
             retval = loss * combined_weights
+
+        elif mask_type=="single_point":
+            # Target point to match
+            target_point = tf.constant([0.54660094, 0.70710683, 0.44858381], dtype=tf.float32)
+            # Tolerance for floating-point comparison
+            tolerance = 1e-5
+
+            # Compute the absolute difference between each pos and the target point
+            abs_diff = tf.abs(pos - target_point)
+
+            # Check if the absolute difference is within the tolerance for all three dimensions
+            mask = tf.reduce_all(abs_diff < tolerance, axis=1)
+
+            # Convert the boolean mask to float32 to use in multiplication
+            mask = tf.cast(mask, tf.float32)
+
+            # Apply the mask to the loss, ensuring it's broadcasted correctly
+            retval = loss * tf.expand_dims(mask, axis=-1)
 
         else:
             retval = loss
@@ -605,3 +652,43 @@ class Custom_ModelCheckpoint(keras.callbacks.Callback):
         val_loss = logs.get("val_loss")
         Network.checkpoint(self.Network, val_loss)
         # print("\nEnd epoch {} of training; got val_loss: {}".format(epoch, logs["val_loss"]))
+
+
+# class PerBatchValidationMetrics(tf.keras.callbacks.Callback):
+#     def __init__(self, validation_data):
+#         super().__init__()
+#         self.validation_data = validation_data
+
+#     def convert_to_float32(self, inputs, outputs):
+#         # Convert input tensors in the dictionary to float32
+#         inputs_converted = {key: tf.cast(value, tf.float32) for key, value in inputs.items()}
+        
+#         # Convert output tensors in the dictionary to float32
+#         outputs_converted = {key: tf.cast(value, tf.float32) for key, value in outputs.items()}
+        
+#         return inputs_converted, outputs_converted
+
+#     def on_epoch_end(self, epoch, logs=None):
+#         per_batch_losses = []
+#         per_batch_metrics = []
+
+#         val_dataset = tf.data.Dataset.from_tensor_slices(self.validation_data)
+        
+#         # Apply the conversion function to each element in the dataset
+#         val_dataset = val_dataset.map(self.convert_to_float32)
+
+#         # Batch the dataset
+#         val_dataset = val_dataset.batch(32)
+        
+#         # Manually iterate over the validation dataset
+#         for x_batch_val, y_batch_val in val_dataset:
+#             # Compute per-batch metrics
+#             loss, *metrics= self.model.test_on_batch(x_batch_val, y_batch_val)
+#             per_batch_losses.append(loss)
+#             per_batch_metrics.append(metrics)
+        
+#         # Here, you can do something with the collected per-batch metrics,
+#         # like printing, logging, or saving them.
+#         print(f"Epoch {epoch+1}:")
+#         print(f"Per-batch Losses: {per_batch_losses}")
+#         print(f"Per-batch Metrics: {per_batch_metrics}")
