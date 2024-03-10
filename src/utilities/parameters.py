@@ -1,8 +1,8 @@
 branch = 'personalization-1.1.1'
 # this branch is for testing and experimenting with loss function on with different types of masking ans weighting
 # uses tf.keras.model to speed up training
-iterations = 2 #0
-epochs = 2#0
+iterations = 20
+epochs = 20
 maglr_iterations = 25
 maglr_epochs = 25
 #50 points for cipic
