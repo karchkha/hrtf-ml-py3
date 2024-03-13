@@ -18,7 +18,7 @@ batch_size = 32
 dropout = 0.0
 remove_mean = False
 initial_lr = 0.0005
-mask_type = None # None #"left_right_weighted" # "combined_weighted" # "lateral_masked" #  "lateral_weighted" # "left_right_masked" # "left_right_weighted" # "left_right_weighted_reverted" # "single_point" #
+mask_type = None #"left_right_weighted" # "combined_weighted" # "lateral_masked" #  "lateral_weighted" # "left_right_masked" # "left_right_weighted" # "left_right_weighted_reverted" # "single_point" # single_area #
 
 
 # System Definitions

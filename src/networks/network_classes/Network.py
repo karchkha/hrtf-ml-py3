@@ -525,8 +525,25 @@ class Network(tf.keras.Model):
             mask = tf.cast(mask, tf.float32)
 
             # Apply the mask to the loss, ensuring it's broadcasted correctly
-            retval = loss * tf.expand_dims(mask, axis=-1)
+            retval = loss * tf.expand_dims(mask, axis=-1) * 1250.0 # compansate fir the fact that it's only one point
 
+        elif mask_type=="single_area":
+            # Target point to match
+            target_point = tf.constant([0.54660094, 0.70710683, 0.44858381], dtype=tf.float32)
+            # Tolerance for floating-point comparison
+            tolerance = 0.2
+
+            # Compute the absolute difference between each pos and the target point
+            abs_diff = tf.abs(pos - target_point)
+
+            # Check if the absolute difference is within the tolerance for all three dimensions
+            mask = tf.reduce_all(abs_diff < tolerance, axis=1)
+
+            # Convert the boolean mask to float32 to use in multiplication
+            mask = tf.cast(mask, tf.float32)
+
+            # Apply the mask to the loss, ensuring it's broadcasted correctly
+            retval = loss * tf.expand_dims(mask, axis=-1)
         else:
             retval = loss
 
