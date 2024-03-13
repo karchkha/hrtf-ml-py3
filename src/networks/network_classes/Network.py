@@ -156,6 +156,7 @@ class Network(tf.keras.Model):
             print ("Compiling model")
             optimizer = tf.keras.optimizers.Adam(learning_rate=self.lr) # it worked well with 0.0005
             #optimizer = tf.keras.optimizers.Adam(learning_rate=0.001) # orginal
+            # optimizer = tf.keras.optimizers.SGD(learning_rate=self.lr)
 
             # if self.loss_weights is not None:
 
@@ -545,7 +546,7 @@ class Network(tf.keras.Model):
             # Apply the mask to the loss, ensuring it's broadcasted correctly
             retval = loss * tf.expand_dims(mask, axis=-1)
         else:
-            retval = loss
+            retval = loss #*1250.0
 
         return retval
 

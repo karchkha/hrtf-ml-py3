@@ -279,6 +279,45 @@ class NetworkMagTotal(Network):
         self.model = Model(inputs=list(self.input_layers.values()), outputs=[output_magtotal_l, output_magtotal_r, output_magmean_l, output_magmean_r, output_magstd_l, output_magstd_r])
         self.model._name = 'magtotal_model'
 
+
+    def make_model(self):
+        print("Making model")
+        init_seed = 100
+        num_out_neurons = np.shape(self.data[self.model_name].getTrainingData())[1]
+
+        # Assuming self.input_layers is a dictionary of Keras Input layers
+        inputs = list(self.input_layers.values())
+
+        # Flatten inputs if they're not already flat (assuming they might be images or multidimensional data)
+        flattened_inputs = [Flatten()(input_layer) if len(input_layer.shape) > 2 else input_layer for input_layer in inputs]
+        
+        # Concatenate all input layers if there are multiple inputs
+        if len(flattened_inputs) > 1:
+            concatenated = Concatenate()(flattened_inputs)
+        else:
+            concatenated = flattened_inputs[0]
+
+        # Increased model complexity
+        x = Dense(512, activation='relu', kernel_initializer='he_uniform')(concatenated)
+        x = Dense(256, activation='relu', kernel_initializer='he_uniform')(x)
+        x = Dense(128, activation='relu', kernel_initializer='he_uniform')(x)
+        x = Dense(64, activation='relu', kernel_initializer='he_uniform')(x)
+
+        # Output branches for the model
+        # Adjust the number of neurons in the output layers and activation functions as necessary
+        output_magtotal_l = Dense(num_out_neurons, activation='linear', name='output_magtotal_l')(x)
+        output_magtotal_r = Dense(num_out_neurons, activation='linear', name='output_magtotal_r')(x)
+        output_magmean_l = Dense(1, activation='linear', name='output_magmean_l')(x)
+        output_magmean_r = Dense(1, activation='linear', name='output_magmean_r')(x)
+        output_magstd_l = Dense(1, activation='linear', name='output_magstd_l')(x)
+        output_magstd_r = Dense(1, activation='linear', name='output_magstd_r')(x)
+
+        self.model = Model(inputs=inputs, outputs=[output_magtotal_l, output_magtotal_r, output_magmean_l, output_magmean_r, output_magstd_l, output_magstd_r])
+        self.model._name = 'simplified_model_with_multiple_outputs'
+
+
+
+
     def set_output_dict(self):
         self.output_dict={}
         for k, d in self.data.items():
