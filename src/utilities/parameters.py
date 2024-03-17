@@ -2,7 +2,7 @@ branch = 'testing_one_point'
 # this branch is for testing and experimenting with loss function on with different types of masking ans weighting
 # uses tf.keras.model to speed up training
 iterations = 20
-epochs = 100
+epochs = 20
 maglr_iterations = 25
 maglr_epochs = 25
 #50 points for cipic
@@ -19,6 +19,8 @@ dropout = 0.0
 remove_mean = False
 initial_lr = 0.001 #0.0005
 mask_type = None #"left_right_weighted" # "combined_weighted" # "lateral_masked" #  "lateral_weighted" # "left_right_masked" # "left_right_weighted" # "left_right_weighted_reverted" # "single_point" # single_area #
+center = 165
+tolerance = 0.2
 
 
 # System Definitions
@@ -56,9 +58,9 @@ This will automatically take care of creating and training networks on which the
 ex: ['magri'] magri depends on all other networks. All networks will be trained
 ex: ['realdiff'] realdiff depends on 'real'. Only 'real' and 'realdiff' will be trained
 '''
-models_to_train_1 = [] # ['mag', 'magl', 'magr', 'real', 'imag', 'realmean', 'realstd', 'imagmean', 'imagstd'] 
-models_to_train_2 = [] #['magri']
-models_to_train_3 = [] #['magfinal']
+models_to_train_1 = ['mag', 'magl', 'magr', 'real', 'imag', 'realmean', 'realstd', 'imagmean', 'imagstd'] 
+models_to_train_2 = ['magri']
+models_to_train_3 = ['magfinal']
 models_to_train_4 =  ['magtotal']
 # uncomment the line below if you want to predict other models
 # models_to_predict = ['magl', 'maglmean', 'maglstd'] # [ 'magr', 'magrmean', 'magrstd'] #['mag', 'magri', 'magfinal', 'magtotal'] #

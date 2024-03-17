@@ -185,7 +185,7 @@ def format_inputs_outputs(pos, hrir, nn, ret_subjs=False, C_hrir=None):
     # Pick a slice
     #
     nn = 0
-    mm = 1
+    mm = 1250
     head_new = np.zeros((num_subj, mm, np.shape(head_local)[2]))
     ear_new = np.zeros((num_subj, mm, np.shape(ear_local)[2], 2))
     pos_new = np.zeros((num_subj, mm, np.shape(pos_local)[2]))

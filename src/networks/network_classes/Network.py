@@ -36,9 +36,15 @@ class Network(tf.keras.Model):
                 lr = initial_lr,
                 output_names = None, 
                 loss_weights = None, 
-                mask_type = mask_type,               
+                mask_type = mask_type,
+                center = center,
+                tolerance = tolerance,          
                 ):
         super(Network, self).__init__()
+
+        self.center = center
+        self.tolerance = tolerance          
+
         self.output_names = output_names
         self.loss_weights = loss_weights
         self.lr = lr
@@ -246,6 +252,10 @@ class Network(tf.keras.Model):
         self.training = (in_train_dict, out_train_dict)
         self.validation = (in_valid_dict, out_valid_dict)
 
+
+        self.training = self.filter_data_by_matching_indexes(self.training, self.center, tolerance = self.tolerance)
+        self.validation = self.filter_data_by_matching_indexes(self.validation, self.center, tolerance = self.tolerance)
+        
     def set_test_inputs_outputs(self):
         print ("Setting test data")
         in_test_dict = {}
@@ -266,6 +276,9 @@ class Network(tf.keras.Model):
         for koput, voput in self.output_dict.items():
             out_test_dict[koput] = voput['test']
         self.test = (in_test_dict, out_test_dict)
+
+
+        self.test = self.filter_data_by_matching_indexes(self.test, self.center, tolerance = self.tolerance)
 
     def get_loss(self, in_dict, out_dict):
         outputs = self.model.predict(in_dict)
@@ -512,15 +525,13 @@ class Network(tf.keras.Model):
 
         elif mask_type=="single_point":
             # Target point to match
-            target_point = tf.constant([0.54660094, 0.70710683, 0.44858381], dtype=tf.float32)
-            # Tolerance for floating-point comparison
-            tolerance = 1e-5
+            target_point = self.target_vector
 
             # Compute the absolute difference between each pos and the target point
             abs_diff = tf.abs(pos - target_point)
 
             # Check if the absolute difference is within the tolerance for all three dimensions
-            mask = tf.reduce_all(abs_diff < tolerance, axis=1)
+            mask = tf.reduce_all(abs_diff < self.tolerance, axis=1)
 
             # Convert the boolean mask to float32 to use in multiplication
             mask = tf.cast(mask, tf.float32)
@@ -530,15 +541,13 @@ class Network(tf.keras.Model):
 
         elif mask_type=="single_area":
             # Target point to match
-            target_point = tf.constant([0.54660094, 0.70710683, 0.44858381], dtype=tf.float32)
-            # Tolerance for floating-point comparison
-            tolerance = 0.2
+            target_point = self.target_vector
 
             # Compute the absolute difference between each pos and the target point
             abs_diff = tf.abs(pos - target_point)
 
             # Check if the absolute difference is within the tolerance for all three dimensions
-            mask = tf.reduce_all(abs_diff < tolerance, axis=1)
+            mask = tf.reduce_all(abs_diff < self.tolerance, axis=1)
 
             # Convert the boolean mask to float32 to use in multiplication
             mask = tf.cast(mask, tf.float32)
@@ -549,6 +558,52 @@ class Network(tf.keras.Model):
             retval = loss #*1250.0
 
         return retval
+
+    def filter_data_by_matching_indexes(self, data, target_index, tolerance=1e-5):
+        input_dict = data[0]
+        output_dict = data[1]
+        
+        # Find the target vector in the "pos" variable using the target_index
+        for key, value in input_dict.items():
+            if "pos" in key:
+                self.target_vector = value[target_index]
+                break
+
+        # Prepare new dictionaries to store filtered data
+        filtered_input_dict = {}
+        filtered_output_dict = {}
+
+        matching_indexes = []
+        # Now, iterate through the same or other "pos" variables as needed
+        for key, value in input_dict.items():
+            # Check if the key contains "pos"
+            if "pos" in key:
+                # Compute the absolute difference between each pos and the target vector
+                abs_diff = np.abs(value - self.target_vector)
+                
+                # Check if the absolute difference is within the tolerance for all dimensions
+                mask = np.all(abs_diff < tolerance, axis=1)
+                
+                # Find the indexes where mask is True
+                indexes = np.where(mask)[0]
+                
+                # Store the found indexes
+                matching_indexes.append( indexes)
+
+        # Filter input_dict
+        for key, value in input_dict.items():
+            
+            # Filter the values by the mask and store in new dict
+            filtered_input_dict[key] = value[matching_indexes]
+
+
+        for key, value in output_dict.items():
+
+            filtered_output_dict[key] = value[matching_indexes]
+
+        # Return the filtered datasets as a tuple
+        return (filtered_input_dict, filtered_output_dict)
+
 
     def train(self):
         print ("Begin training")

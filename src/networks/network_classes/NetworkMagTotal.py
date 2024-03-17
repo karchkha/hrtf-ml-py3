@@ -127,193 +127,193 @@ class NetworkMagTotal(Network):
         
         # print(self.input_networks)
 
-#     def make_model(self):
-#         print ("Making model")
-#         init_seed = 100
-#         num_out_neurons = np.shape(self.data[self.model_name].getTrainingData())[1]
-#         #Load previous input models
-#         mag = self.input_networks['mag'].model
-#         magri = self.input_networks['magri'].model
-#         magfinal = self.input_networks['magfinal'].model
-#         magl = self.input_networks['magl'].model
-#         magr = self.input_networks['magr'].model
-#         mag._name = 'mag_model'
-#         magri._name = 'magri_model'
-#         magfinal._name = 'magfinal_model'
-#         magl._name = 'magl_model'
-#         magr._name = 'magr_model'
-        
-        
-#         #Change vriables names so it won't repeat and model works properly
-#         # for l in mag.weights:
-#         #     l = tf.Variable(l, name="0_"+l.name)
-#         # for l in magri.weights:
-#         #     l = tf.Variable(l, name="0_"+l.name)
-            
-#         # mag.save("temp")
-#         # mag = load_model("temp", custom_objects=globalvars.custom_objects)
-        
-        
-#         #Get new magri, magrimean, magristd 
-# #        mag.trainable=False
-# #        magri.trainable=False
-# #        magfinal.trainable = False
-# #        magl.trainable = False
-# #        magr.trainable = False
-# #        mag_out = Lambda(globalvars.identity, trainable=False, name=self.model_name+'_lambda_mag')(mag(self.input_layers.values()))
-# #        mag_out_l = Lambda(globalvars.get_left,trainable=False, name=self.model_name+'_lambda_mag_l')(mag_out)
-# #        mag_out_r = Lambda(globalvars.get_right,trainable=False, name=self.model_name+'_lambda_mag_r')(mag_out)
-# #        magri_out = Lambda(globalvars.identity, trainable=False, name=self.model_name+'_lambda_magri')(magri(self.input_layers.values()))
-# #        magri_out_l = Lambda(globalvars.get_left, trainable=False, name=self.model_name+'_lambda_magri_l')(magri_out)
-# #        magri_out_r = Lambda(globalvars.get_right, trainable=False, name=self.model_name+'_lambda_magri_r')(magri_out)
-# #        magfinal_out = Lambda(globalvars.identity,trainable=False, name=self.model_name+'_lambda_magfinal')(magfinal(self.input_layers.values()))
-# #        magfinal_out_l = Lambda(globalvars.get_left, trainable=False, name=self.model_name+'_lambda_magfinal_l')(magfinal_out)
-# #        magfinal_out_r = Lambda(globalvars.get_right, trainable=False,  name=self.model_name+'_lambda_magfinal_r')(magfinal_out)
-# #        magmean_out_l = Lambda(globalvars.get_first, trainable=False, name=self.model_name+'_lambda_magmean_l')(magl([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_left']]))
-# #        magmean_out_r = Lambda(globalvars.get_first, trainable=False, name=self.model_name+'_lambda_magmean_r')(magr([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_right']]))
-# #        magstd_out_l = Lambda(globalvars.get_second, trainable=False, name=self.model_name+'_lambda_magstd_l')(magl([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_left']]))
-# #        magstd_out_r = Lambda(globalvars.get_second, trainable=False, name=self.model_name+'_lambda_magstd_r')(magr([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_right']]))
-# #        mag_l = Lambda(globalvars.recalc, trainable=False, name=self.model_name+'_lambda_mag_recalc_l')([mag_out_l, magmean_out_l, magstd_out_l])
-# #        mag_r = Lambda(globalvars.recalc, trainable=False, name=self.model_name+'_lambda_mag_recalc_r')([mag_out_r, magmean_out_r, magstd_out_r])
-# #        magri_l = Lambda(globalvars.recalc, trainable=False, name=self.model_name+'_lambda_magri_recalc_l')([magri_out_l, magmean_out_l, magstd_out_l])
-# #        magri_r = Lambda(globalvars.recalc, trainable=False, name=self.model_name+'_lambda_magri_recalc_r')([magri_out_r, magmean_out_r, magstd_out_r])
-# #        magfinal_l = Lambda(globalvars.recalc, trainable=False, name=self.model_name+'_lambda_magfinal_recalc_l')([magfinal_out_l, magmean_out_l, magstd_out_l])
-# #        magfinal_r = Lambda(globalvars.recalc, trainable=False, name=self.model_name+'_lambda_magfinal_recalc_r')([magfinal_out_r, magmean_out_r, magstd_out_r])
-#         mag_out = Lambda(globalvars.identity,  name=self.model_name+'_lambda_mag')(mag(self.input_layers.values()))
-#         mag_out_l = Lambda(globalvars.get_left, name=self.model_name+'_lambda_mag_l')(mag_out)
-#         mag_out_r = Lambda(globalvars.get_right, name=self.model_name+'_lambda_mag_r')(mag_out)
-#         magri_out = Lambda(globalvars.identity,  name=self.model_name+'_lambda_magri')(magri(self.input_layers.values()))
-#         magri_out_l = Lambda(globalvars.get_left,  name=self.model_name+'_lambda_magri_l')(magri_out)
-#         magri_out_r = Lambda(globalvars.get_right,  name=self.model_name+'_lambda_magri_r')(magri_out)
-#         magfinal_out = Lambda(globalvars.identity, name=self.model_name+'_lambda_magfinal')(magfinal(self.input_layers.values()))
-#         magfinal_out_l = Lambda(globalvars.get_left,  name=self.model_name+'_lambda_magfinal_l')(magfinal_out)
-#         magfinal_out_r = Lambda(globalvars.get_right,   name=self.model_name+'_lambda_magfinal_r')(magfinal_out)
-#         magmean_out_l = Lambda(globalvars.get_first,  name=self.model_name+'_lambda_magmean_l')(magl([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_left']]))
-#         magmean_out_r = Lambda(globalvars.get_first,  name=self.model_name+'_lambda_magmean_r')(magr([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_right']]))
-#         magstd_out_l = Lambda(globalvars.get_second,  name=self.model_name+'_lambda_magstd_l')(magl([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_left']]))
-#         magstd_out_r = Lambda(globalvars.get_second,  name=self.model_name+'_lambda_magstd_r')(magr([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_right']]))
-#         mag_l = Lambda(globalvars.recalc,  name=self.model_name+'_lambda_mag_recalc_l')([mag_out_l, magmean_out_l, magstd_out_l])
-#         mag_r = Lambda(globalvars.recalc,  name=self.model_name+'_lambda_mag_recalc_r')([mag_out_r, magmean_out_r, magstd_out_r])
-#         magri_l = Lambda(globalvars.recalc,  name=self.model_name+'_lambda_magri_recalc_l')([magri_out_l, magmean_out_l, magstd_out_l])
-#         magri_r = Lambda(globalvars.recalc,  name=self.model_name+'_lambda_magri_recalc_r')([magri_out_r, magmean_out_r, magstd_out_r])
-#         magfinal_l = Lambda(globalvars.recalc,  name=self.model_name+'_lambda_magfinal_recalc_l')([magfinal_out_l, magmean_out_l, magstd_out_l])
-#         magfinal_r = Lambda(globalvars.recalc,  name=self.model_name+'_lambda_magfinal_recalc_r')([magfinal_out_r, magmean_out_r, magstd_out_r])
-# #        input_mag_l = concatenate([mag_l, Input(shape=(num_out_neurons,), tensor=K.variable(np.ones((num_out_neurons,1))))], axis=1)
-# #        input_magri_l = concatenate([magri_l, Input(shape=(num_out_neurons,), tensor=K.variable(np.ones((num_out_neurons,1))))], axis=1)
-# #        input_magfinal_l = concatenate([magfinal_l, Input(shape=(num_out_neurons,), tensor=K.variable(np.ones((num_out_neurons,1))))], axis=1)
-# #       #input_mag_l = concatenate([mag_l, K.constant(1.0, shape=(num_out_neurons,))], axis=1)
-# #        const_lam = Lambda(globalvars.identity, name=self.model_name+'_lambda_const_input')(const)
-# #        input_magri_l = concatenate([magri_l, const], axis=1)
-# #        input_magfinal_l = concatenate([magfinal_l, const], axis=1)
-#         layert_mag_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_mag_input_l')(mag_l)
-#         layert_mag_l = Dropout(self.dropout) (layert_mag_l)
-#         layert_magri_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magri_input_l')(magri_l)
-#         layert_magri_l = Dropout(self.dropout) (layert_magri_l)
-#         layert_magfinal_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magfinal_input_l')(magfinal_l)
-#         layert_magfinal_l = Dropout(self.dropout) (layert_magfinal_l)
-#         layert_magavg_l = add([layert_mag_l, layert_magri_l, layert_magfinal_l], name=self.model_name+'_magavg_l')
-# #        layert_magavg_db_l = Lambda(globalvars.mag_to_db, trainable=False, name=self.model_name+'_lambda_mag_to_db_l')(layert_magavg_l)
-# #        input_mag_r = concatenate([mag_r, const], axis=1)
-# #        input_magri_r = concatenate([magri_r, const], axis=1)
-# #        input_magfinal_r = concatenate([magfinal_r, const], axis=1)
-#         layert_mag_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_mag_input_r')(mag_r)
-#         layert_mag_r = Dropout(self.dropout) (layert_mag_r)
-#         layert_magri_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magri_input_r')(magri_r)
-#         layert_magri_r = Dropout(self.dropout) (layert_magri_r)
-#         layert_magfinal_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magfinal_input_r')(magfinal_r)
-#         layert_magfinal_r = Dropout(self.dropout) (layert_magfinal_r)
-#         layert_magavg_r = add([layert_mag_r, layert_magri_r, layert_magfinal_r], name=self.model_name+'_magavg_r')
-# #        layert_magavg_db_r = Lambda(globalvars.mag_to_db, trainable=False, name=self.model_name+'_lambda_mag_to_db_r')(layert_magavg_r)
-#         pos_norm = Lambda(globalvars.data_normalize, trainable=False, name=self.model_name+'_lambda_pos_normalize_l', arguments={'div': globalvars.pos_div, 'scale': globalvars.input_scale})(self.input_layers['position'])
-#         head_norm = Lambda(globalvars.data_normalize, trainable=False, name=self.model_name+'_lambda_head_normalize_l', arguments={'div': globalvars.head_div, 'scale': globalvars.input_scale})(self.input_layers['head'])
-#         ear_l_norm = Lambda(globalvars.data_normalize, trainable=False, name=self.model_name+'_lambda_ear_normalize_l', arguments={'div': globalvars.left_ear_div, 'scale': globalvars.input_scale})(self.input_layers['ear_left'])
-#         ear_r_norm = Lambda(globalvars.data_normalize, trainable=False, name=self.model_name+'_lambda_ear_normalize_r', arguments={'div': globalvars.right_ear_div, 'scale': globalvars.input_scale})(self.input_layers['ear_right'])
-        
-#         pos_norm = self.input_layers['position']
-#         head_norm = self.input_layers['head']
-#         ear_l_norm = self.input_layers['ear_left']
-#         ear_r_norm = self.input_layers['ear_right']
-
-
-        
-#         input_l = concatenate([layert_magavg_l, pos_norm, head_norm, ear_l_norm], axis=1)
-#         input_r = concatenate([layert_magavg_r, pos_norm, head_norm, ear_r_norm], axis=1)
-#         num_in_neurons = int(layert_magavg_l.shape[1])
-#         layert_l = Dense(num_out_neurons, kernel_initializer=globalvars.custom_init_zeros_ident(), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_magavg_db_input_l')(layert_magavg_l)
-#         layert_l = Dropout(self.dropout) (layert_l)
-#         layert_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden1_l')(layert_l)
-#         layert_l = Dropout(self.dropout) (layert_l)
-#         layert_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden2_l')(layert_l)
-#         layert_l = Dropout(self.dropout) (layert_l)
-#         layert_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden3_l')(layert_l)
-#         layert_l = Dropout(self.dropout) (layert_l)
-#         layert_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden4_l')(layert_l)
-#         layert_l = Dropout(self.dropout) (layert_l)
-#         output_magtotal_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.output_names[0])(layert_l)
-#         #output_magtotal_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[0])(layert_l)
-# #        output_magtotal_norm_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[6])(output_magtotal_l)
-# #        output_magtotal_l = Lambda(globalvars.positive, name=self.output_names[0])(layert_l)
-#         output_magmean_l = Lambda(globalvars.mean, name=self.output_names[2])(output_magtotal_l)
-#         output_magstd_l = Lambda(globalvars.std, name=self.output_names[4])(output_magtotal_l)
-# #        output_magtotal_l = Lambda(globalvars.positive, name=self.output_names[0])(layert_l)
-#         #Split into right
-# #        num_in_neurons = int(input_r.shape[1])
-#         num_in_neurons = int(layert_magavg_r.shape[1])
-#         layert_r = Dense(num_out_neurons, kernel_initializer=globalvars.custom_init_zeros_ident(), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_magavg_db_input_r')(layert_magavg_r)
-#         layert_r = Dropout(self.dropout) (layert_r)
-#         layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden1_r')(layert_r)
-#         layert_r = Dropout(self.dropout) (layert_r)
-#         layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden2_r')(layert_r)
-#         layert_r = Dropout(self.dropout) (layert_r)
-#         layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden3_r')(layert_r)
-#         layert_r = Dropout(self.dropout) (layert_r)
-#         layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden4_r')(layert_r)
-#         layert_r = Dropout(self.dropout) (layert_r)
-#         output_magtotal_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.output_names[1])(layert_r)
-#         #output_magtotal_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[1])(layert_r)
-#         #layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_hidden5_r')(layert_r)
-# #        output_magtotal_norm_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[7])(output_magtotal_r)
-#         output_magmean_r = Lambda(globalvars.mean, name=self.output_names[3])(output_magtotal_r)
-#         output_magstd_r = Lambda(globalvars.std, name=self.output_names[5])(output_magtotal_r)
-#         #output_magtotal_r = Lambda(globalvars.positive, name=self.output_names[1])(layert_r)
-#         self.model = Model(inputs=list(self.input_layers.values()), outputs=[output_magtotal_l, output_magtotal_r, output_magmean_l, output_magmean_r, output_magstd_l, output_magstd_r])
-#         self.model._name = 'magtotal_model'
-
-
     def make_model(self):
-        print("Making model")
+        print ("Making model")
         init_seed = 100
         num_out_neurons = np.shape(self.data[self.model_name].getTrainingData())[1]
-
-        # Assuming self.input_layers is a dictionary of Keras Input layers
-        inputs = list(self.input_layers.values())
-
-        # Flatten inputs if they're not already flat (assuming they might be images or multidimensional data)
-        flattened_inputs = [Flatten()(input_layer) if len(input_layer.shape) > 2 else input_layer for input_layer in inputs]
+        #Load previous input models
+        mag = self.input_networks['mag'].model
+        magri = self.input_networks['magri'].model
+        magfinal = self.input_networks['magfinal'].model
+        magl = self.input_networks['magl'].model
+        magr = self.input_networks['magr'].model
+        mag._name = 'mag_model'
+        magri._name = 'magri_model'
+        magfinal._name = 'magfinal_model'
+        magl._name = 'magl_model'
+        magr._name = 'magr_model'
         
-        # Concatenate all input layers if there are multiple inputs
-        if len(flattened_inputs) > 1:
-            concatenated = Concatenate()(flattened_inputs)
-        else:
-            concatenated = flattened_inputs[0]
+        
+        #Change vriables names so it won't repeat and model works properly
+        # for l in mag.weights:
+        #     l = tf.Variable(l, name="0_"+l.name)
+        # for l in magri.weights:
+        #     l = tf.Variable(l, name="0_"+l.name)
+            
+        # mag.save("temp")
+        # mag = load_model("temp", custom_objects=globalvars.custom_objects)
+        
+        
+        #Get new magri, magrimean, magristd 
+#        mag.trainable=False
+#        magri.trainable=False
+#        magfinal.trainable = False
+#        magl.trainable = False
+#        magr.trainable = False
+#        mag_out = Lambda(globalvars.identity, trainable=False, name=self.model_name+'_lambda_mag')(mag(self.input_layers.values()))
+#        mag_out_l = Lambda(globalvars.get_left,trainable=False, name=self.model_name+'_lambda_mag_l')(mag_out)
+#        mag_out_r = Lambda(globalvars.get_right,trainable=False, name=self.model_name+'_lambda_mag_r')(mag_out)
+#        magri_out = Lambda(globalvars.identity, trainable=False, name=self.model_name+'_lambda_magri')(magri(self.input_layers.values()))
+#        magri_out_l = Lambda(globalvars.get_left, trainable=False, name=self.model_name+'_lambda_magri_l')(magri_out)
+#        magri_out_r = Lambda(globalvars.get_right, trainable=False, name=self.model_name+'_lambda_magri_r')(magri_out)
+#        magfinal_out = Lambda(globalvars.identity,trainable=False, name=self.model_name+'_lambda_magfinal')(magfinal(self.input_layers.values()))
+#        magfinal_out_l = Lambda(globalvars.get_left, trainable=False, name=self.model_name+'_lambda_magfinal_l')(magfinal_out)
+#        magfinal_out_r = Lambda(globalvars.get_right, trainable=False,  name=self.model_name+'_lambda_magfinal_r')(magfinal_out)
+#        magmean_out_l = Lambda(globalvars.get_first, trainable=False, name=self.model_name+'_lambda_magmean_l')(magl([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_left']]))
+#        magmean_out_r = Lambda(globalvars.get_first, trainable=False, name=self.model_name+'_lambda_magmean_r')(magr([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_right']]))
+#        magstd_out_l = Lambda(globalvars.get_second, trainable=False, name=self.model_name+'_lambda_magstd_l')(magl([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_left']]))
+#        magstd_out_r = Lambda(globalvars.get_second, trainable=False, name=self.model_name+'_lambda_magstd_r')(magr([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_right']]))
+#        mag_l = Lambda(globalvars.recalc, trainable=False, name=self.model_name+'_lambda_mag_recalc_l')([mag_out_l, magmean_out_l, magstd_out_l])
+#        mag_r = Lambda(globalvars.recalc, trainable=False, name=self.model_name+'_lambda_mag_recalc_r')([mag_out_r, magmean_out_r, magstd_out_r])
+#        magri_l = Lambda(globalvars.recalc, trainable=False, name=self.model_name+'_lambda_magri_recalc_l')([magri_out_l, magmean_out_l, magstd_out_l])
+#        magri_r = Lambda(globalvars.recalc, trainable=False, name=self.model_name+'_lambda_magri_recalc_r')([magri_out_r, magmean_out_r, magstd_out_r])
+#        magfinal_l = Lambda(globalvars.recalc, trainable=False, name=self.model_name+'_lambda_magfinal_recalc_l')([magfinal_out_l, magmean_out_l, magstd_out_l])
+#        magfinal_r = Lambda(globalvars.recalc, trainable=False, name=self.model_name+'_lambda_magfinal_recalc_r')([magfinal_out_r, magmean_out_r, magstd_out_r])
+        mag_out = Lambda(globalvars.identity,  name=self.model_name+'_lambda_mag')(mag(self.input_layers.values()))
+        mag_out_l = Lambda(globalvars.get_left, name=self.model_name+'_lambda_mag_l')(mag_out)
+        mag_out_r = Lambda(globalvars.get_right, name=self.model_name+'_lambda_mag_r')(mag_out)
+        magri_out = Lambda(globalvars.identity,  name=self.model_name+'_lambda_magri')(magri(self.input_layers.values()))
+        magri_out_l = Lambda(globalvars.get_left,  name=self.model_name+'_lambda_magri_l')(magri_out)
+        magri_out_r = Lambda(globalvars.get_right,  name=self.model_name+'_lambda_magri_r')(magri_out)
+        magfinal_out = Lambda(globalvars.identity, name=self.model_name+'_lambda_magfinal')(magfinal(self.input_layers.values()))
+        magfinal_out_l = Lambda(globalvars.get_left,  name=self.model_name+'_lambda_magfinal_l')(magfinal_out)
+        magfinal_out_r = Lambda(globalvars.get_right,   name=self.model_name+'_lambda_magfinal_r')(magfinal_out)
+        magmean_out_l = Lambda(globalvars.get_first,  name=self.model_name+'_lambda_magmean_l')(magl([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_left']]))
+        magmean_out_r = Lambda(globalvars.get_first,  name=self.model_name+'_lambda_magmean_r')(magr([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_right']]))
+        magstd_out_l = Lambda(globalvars.get_second,  name=self.model_name+'_lambda_magstd_l')(magl([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_left']]))
+        magstd_out_r = Lambda(globalvars.get_second,  name=self.model_name+'_lambda_magstd_r')(magr([self.input_layers['position'], self.input_layers['head'], self.input_layers['ear_right']]))
+        mag_l = Lambda(globalvars.recalc,  name=self.model_name+'_lambda_mag_recalc_l')([mag_out_l, magmean_out_l, magstd_out_l])
+        mag_r = Lambda(globalvars.recalc,  name=self.model_name+'_lambda_mag_recalc_r')([mag_out_r, magmean_out_r, magstd_out_r])
+        magri_l = Lambda(globalvars.recalc,  name=self.model_name+'_lambda_magri_recalc_l')([magri_out_l, magmean_out_l, magstd_out_l])
+        magri_r = Lambda(globalvars.recalc,  name=self.model_name+'_lambda_magri_recalc_r')([magri_out_r, magmean_out_r, magstd_out_r])
+        magfinal_l = Lambda(globalvars.recalc,  name=self.model_name+'_lambda_magfinal_recalc_l')([magfinal_out_l, magmean_out_l, magstd_out_l])
+        magfinal_r = Lambda(globalvars.recalc,  name=self.model_name+'_lambda_magfinal_recalc_r')([magfinal_out_r, magmean_out_r, magstd_out_r])
+#        input_mag_l = concatenate([mag_l, Input(shape=(num_out_neurons,), tensor=K.variable(np.ones((num_out_neurons,1))))], axis=1)
+#        input_magri_l = concatenate([magri_l, Input(shape=(num_out_neurons,), tensor=K.variable(np.ones((num_out_neurons,1))))], axis=1)
+#        input_magfinal_l = concatenate([magfinal_l, Input(shape=(num_out_neurons,), tensor=K.variable(np.ones((num_out_neurons,1))))], axis=1)
+#       #input_mag_l = concatenate([mag_l, K.constant(1.0, shape=(num_out_neurons,))], axis=1)
+#        const_lam = Lambda(globalvars.identity, name=self.model_name+'_lambda_const_input')(const)
+#        input_magri_l = concatenate([magri_l, const], axis=1)
+#        input_magfinal_l = concatenate([magfinal_l, const], axis=1)
+        layert_mag_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_mag_input_l')(mag_l)
+        layert_mag_l = Dropout(self.dropout) (layert_mag_l)
+        layert_magri_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magri_input_l')(magri_l)
+        layert_magri_l = Dropout(self.dropout) (layert_magri_l)
+        layert_magfinal_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magfinal_input_l')(magfinal_l)
+        layert_magfinal_l = Dropout(self.dropout) (layert_magfinal_l)
+        layert_magavg_l = add([layert_mag_l, layert_magri_l, layert_magfinal_l], name=self.model_name+'_magavg_l')
+#        layert_magavg_db_l = Lambda(globalvars.mag_to_db, trainable=False, name=self.model_name+'_lambda_mag_to_db_l')(layert_magavg_l)
+#        input_mag_r = concatenate([mag_r, const], axis=1)
+#        input_magri_r = concatenate([magri_r, const], axis=1)
+#        input_magfinal_r = concatenate([magfinal_r, const], axis=1)
+        layert_mag_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_mag_input_r')(mag_r)
+        layert_mag_r = Dropout(self.dropout) (layert_mag_r)
+        layert_magri_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magri_input_r')(magri_r)
+        layert_magri_r = Dropout(self.dropout) (layert_magri_r)
+        layert_magfinal_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=(1.0/3.0)), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_magfinal_input_r')(magfinal_r)
+        layert_magfinal_r = Dropout(self.dropout) (layert_magfinal_r)
+        layert_magavg_r = add([layert_mag_r, layert_magri_r, layert_magfinal_r], name=self.model_name+'_magavg_r')
+#        layert_magavg_db_r = Lambda(globalvars.mag_to_db, trainable=False, name=self.model_name+'_lambda_mag_to_db_r')(layert_magavg_r)
+        pos_norm = Lambda(globalvars.data_normalize, trainable=False, name=self.model_name+'_lambda_pos_normalize_l', arguments={'div': globalvars.pos_div, 'scale': globalvars.input_scale})(self.input_layers['position'])
+        head_norm = Lambda(globalvars.data_normalize, trainable=False, name=self.model_name+'_lambda_head_normalize_l', arguments={'div': globalvars.head_div, 'scale': globalvars.input_scale})(self.input_layers['head'])
+        ear_l_norm = Lambda(globalvars.data_normalize, trainable=False, name=self.model_name+'_lambda_ear_normalize_l', arguments={'div': globalvars.left_ear_div, 'scale': globalvars.input_scale})(self.input_layers['ear_left'])
+        ear_r_norm = Lambda(globalvars.data_normalize, trainable=False, name=self.model_name+'_lambda_ear_normalize_r', arguments={'div': globalvars.right_ear_div, 'scale': globalvars.input_scale})(self.input_layers['ear_right'])
+        
+        pos_norm = self.input_layers['position']
+        head_norm = self.input_layers['head']
+        ear_l_norm = self.input_layers['ear_left']
+        ear_r_norm = self.input_layers['ear_right']
 
-        # Increased model complexity
-        x = Dense(512, activation='relu', kernel_initializer='he_uniform')(concatenated)
-        x = Dense(256, activation='relu', kernel_initializer='he_uniform')(x)
-        x = Dense(128, activation='relu', kernel_initializer='he_uniform')(x)
-        x = Dense(64, activation='relu', kernel_initializer='he_uniform')(x)
 
-        # Output branches for the model
-        # Adjust the number of neurons in the output layers and activation functions as necessary
-        output_magtotal_l = Dense(num_out_neurons, activation='linear', name='output_magtotal_l')(x)
-        output_magtotal_r = Dense(num_out_neurons, activation='linear', name='output_magtotal_r')(x)
-        output_magmean_l = Dense(1, activation='linear', name='output_magmean_l')(x)
-        output_magmean_r = Dense(1, activation='linear', name='output_magmean_r')(x)
-        output_magstd_l = Dense(1, activation='linear', name='output_magstd_l')(x)
-        output_magstd_r = Dense(1, activation='linear', name='output_magstd_r')(x)
+        
+        input_l = concatenate([layert_magavg_l, pos_norm, head_norm, ear_l_norm], axis=1)
+        input_r = concatenate([layert_magavg_r, pos_norm, head_norm, ear_r_norm], axis=1)
+        num_in_neurons = int(layert_magavg_l.shape[1])
+        layert_l = Dense(num_out_neurons, kernel_initializer=globalvars.custom_init_zeros_ident(), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_magavg_db_input_l')(layert_magavg_l)
+        layert_l = Dropout(self.dropout) (layert_l)
+        layert_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden1_l')(layert_l)
+        layert_l = Dropout(self.dropout) (layert_l)
+        layert_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden2_l')(layert_l)
+        layert_l = Dropout(self.dropout) (layert_l)
+        layert_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden3_l')(layert_l)
+        layert_l = Dropout(self.dropout) (layert_l)
+        layert_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden4_l')(layert_l)
+        layert_l = Dropout(self.dropout) (layert_l)
+        output_magtotal_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.output_names[0])(layert_l)
+        #output_magtotal_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[0])(layert_l)
+#        output_magtotal_norm_l = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[6])(output_magtotal_l)
+#        output_magtotal_l = Lambda(globalvars.positive, name=self.output_names[0])(layert_l)
+        output_magmean_l = Lambda(globalvars.mean, name=self.output_names[2])(output_magtotal_l)
+        output_magstd_l = Lambda(globalvars.std, name=self.output_names[4])(output_magtotal_l)
+#        output_magtotal_l = Lambda(globalvars.positive, name=self.output_names[0])(layert_l)
+        #Split into right
+#        num_in_neurons = int(input_r.shape[1])
+        num_in_neurons = int(layert_magavg_r.shape[1])
+        layert_r = Dense(num_out_neurons, kernel_initializer=globalvars.custom_init_zeros_ident(), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_magavg_db_input_r')(layert_magavg_r)
+        layert_r = Dropout(self.dropout) (layert_r)
+        layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden1_r')(layert_r)
+        layert_r = Dropout(self.dropout) (layert_r)
+        layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden2_r')(layert_r)
+        layert_r = Dropout(self.dropout) (layert_r)
+        layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden3_r')(layert_r)
+        layert_r = Dropout(self.dropout) (layert_r)
+        layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.model_name+'_hidden4_r')(layert_r)
+        layert_r = Dropout(self.dropout) (layert_r)
+        output_magtotal_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal_relu, name=self.output_names[1])(layert_r)
+        #output_magtotal_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[1])(layert_r)
+        #layert_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.model_name+'_hidden5_r')(layert_r)
+#        output_magtotal_norm_r = Dense(num_out_neurons, kernel_initializer=ki.identity(gain=1.0), activation=globalvars.custom_activation_magtotal, name=self.output_names[7])(output_magtotal_r)
+        output_magmean_r = Lambda(globalvars.mean, name=self.output_names[3])(output_magtotal_r)
+        output_magstd_r = Lambda(globalvars.std, name=self.output_names[5])(output_magtotal_r)
+        #output_magtotal_r = Lambda(globalvars.positive, name=self.output_names[1])(layert_r)
+        self.model = Model(inputs=list(self.input_layers.values()), outputs=[output_magtotal_l, output_magtotal_r, output_magmean_l, output_magmean_r, output_magstd_l, output_magstd_r])
+        self.model._name = 'magtotal_model'
 
-        self.model = Model(inputs=inputs, outputs=[output_magtotal_l, output_magtotal_r, output_magmean_l, output_magmean_r, output_magstd_l, output_magstd_r])
-        self.model._name = 'simplified_model_with_multiple_outputs'
+
+    # def make_model(self):
+    #     print("Making model")
+    #     init_seed = 100
+    #     num_out_neurons = np.shape(self.data[self.model_name].getTrainingData())[1]
+
+    #     # Assuming self.input_layers is a dictionary of Keras Input layers
+    #     inputs = list(self.input_layers.values())
+
+    #     # Flatten inputs if they're not already flat (assuming they might be images or multidimensional data)
+    #     flattened_inputs = [Flatten()(input_layer) if len(input_layer.shape) > 2 else input_layer for input_layer in inputs]
+        
+    #     # Concatenate all input layers if there are multiple inputs
+    #     if len(flattened_inputs) > 1:
+    #         concatenated = Concatenate()(flattened_inputs)
+    #     else:
+    #         concatenated = flattened_inputs[0]
+
+    #     # Increased model complexity
+    #     x = Dense(1024, activation='relu', kernel_initializer='he_uniform')(concatenated)
+    #     x = Dense(512, activation='relu', kernel_initializer='he_uniform')(x)
+    #     x = Dense(256, activation='relu', kernel_initializer='he_uniform')(x)
+    #     x = Dense(128, activation='relu', kernel_initializer='he_uniform')(x)
+
+    #     # Output branches for the model
+    #     # Adjust the number of neurons in the output layers and activation functions as necessary
+    #     output_magtotal_l = Dense(num_out_neurons, activation='linear', name='output_magtotal_l')(x)
+    #     output_magtotal_r = Dense(num_out_neurons, activation='linear', name='output_magtotal_r')(x)
+    #     output_magmean_l = Dense(1, activation='linear', name='output_magmean_l')(x)
+    #     output_magmean_r = Dense(1, activation='linear', name='output_magmean_r')(x)
+    #     output_magstd_l = Dense(1, activation='linear', name='output_magstd_l')(x)
+    #     output_magstd_r = Dense(1, activation='linear', name='output_magstd_r')(x)
+
+    #     self.model = Model(inputs=inputs, outputs=[output_magtotal_l, output_magtotal_r, output_magmean_l, output_magmean_r, output_magstd_l, output_magstd_r])
+    #     self.model._name = 'simplified_model_with_multiple_outputs'
 
 
 

@@ -628,11 +628,6 @@ def main():
         if args['C_hrir_type'] != args['hrir_type']:
             C_hrir, pos, fs, nn = read_hdf5.getData(args['db'], subjects, db_filepath=args['db_path'], ring=args['ring'], ear=args['ear'], hrir_type=args['C_hrir_type'], radius=None)
 
-    hrir = np.expand_dims(hrir[:,165,:,:], axis=1)
-    for i, p in enumerate(pos):
-        pos[i]=np.expand_dims(p[165],axis=0)
-    for i, p in enumerate(nn):
-        nn[i]=np.expand_dims(p[165],axis=0)
 
     data_manager.format_inputs_outputs(pos, hrir, nn, C_hrir=C_hrir)
     position, head, ear, magnitude, magnitude_raw, real, imaginary , C_magnitude, C_real, C_imaginary, mean_data = data_manager.get_data()
