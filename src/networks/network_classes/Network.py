@@ -562,47 +562,51 @@ class Network(tf.keras.Model):
     def filter_data_by_matching_indexes(self, data, target_index, tolerance=1e-5):
         input_dict = data[0]
         output_dict = data[1]
-        
-        # Find the target vector in the "pos" variable using the target_index
-        for key, value in input_dict.items():
-            if "pos" in key:
-                self.target_vector = value[target_index]
-                break
 
-        # Prepare new dictionaries to store filtered data
+        # Initialize dictionaries to store filtered data
         filtered_input_dict = {}
         filtered_output_dict = {}
 
-        matching_indexes = []
-        # Now, iterate through the same or other "pos" variables as needed
-        for key, value in input_dict.items():
-            # Check if the key contains "pos"
-            if "pos" in key:
-                # Compute the absolute difference between each pos and the target vector
-                abs_diff = np.abs(value - self.target_vector)
-                
-                # Check if the absolute difference is within the tolerance for all dimensions
-                mask = np.all(abs_diff < tolerance, axis=1)
-                
-                # Find the indexes where mask is True
-                indexes = np.where(mask)[0]
-                
-                # Store the found indexes
-                matching_indexes.append( indexes)
+        for index in target_index:
+            # Find the target vector in the "pos" variable using the target_index
+            for key, value in input_dict.items():
+                if "pos" in key:
+                    self.target_vector = value[index]
+                    break
 
-        # Filter input_dict
-        for key, value in input_dict.items():
-            
-            # Filter the values by the mask and store in new dict
-            filtered_input_dict[key] = value[matching_indexes]
+            matching_indexes = []
+            # Now, iterate through the same or other "pos" variables as needed
+            for key, value in input_dict.items():
+                # Check if the key contains "pos"
+                if "pos" in key:
+                    # Compute the absolute difference between each pos and the target vector
+                    abs_diff = np.abs(value - self.target_vector)
+                    
+                    # Check if the absolute difference is within the tolerance for all dimensions
+                    mask = np.all(abs_diff < tolerance, axis=1)
+                    
+                    # Find the indexes where mask is True
+                    indexes = np.where(mask)[0]
+                    
+                    # Store the found indexes
+                    matching_indexes.append(indexes)
 
+            # Filter input_dict and output_dict
+            for key, value in input_dict.items():
+                filtered_input_dict.setdefault(key, []).extend(value[matching_indexes])
+            for key, value in output_dict.items():
+                filtered_output_dict.setdefault(key, []).extend(value[matching_indexes])
 
-        for key, value in output_dict.items():
-
-            filtered_output_dict[key] = value[matching_indexes]
+        # Convert lists to arrays
+        for key, value in filtered_input_dict.items():
+            filtered_input_dict[key] = np.array(value)
+        for key, value in filtered_output_dict.items():
+            filtered_output_dict[key] = np.array(value)
 
         # Return the filtered datasets as a tuple
         return (filtered_input_dict, filtered_output_dict)
+
+
 
 
     def train(self):
