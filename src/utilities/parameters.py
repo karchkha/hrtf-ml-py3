@@ -1,4 +1,5 @@
 branch = 'personalization-1.0.2'
+# lr scheduler and early stopping
 iterations = 1 #20
 epochs = 400 #20
 maglr_iterations = 1 #25
