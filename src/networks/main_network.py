@@ -415,9 +415,27 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
                     axr0.set_ylabel("Log Spectral Distortion (dB)")
                     axr0.set_title("Right Ear Spectral Distortion")
     plt.show()
-    for i in plt.get_fignums():
-        plt.figure(i)
-        plt.savefig(f'lsd{i}.png', bbox_inches='tight')
+    fig_lsdall_l.savefig('lsd_heatmap_l.png', bbox_inches='tight')
+    fig_lsdall_r.savefig('lsd_heatmap_r.png', bbox_inches='tight')
+    plt.close(fig_lsdall_l)
+    plt.close(fig_lsdall_r)
+    if lsd_0_azi and 'cipic' in args['db']:
+        fig_lsd0l.savefig('lsd_zero_azi_l.png', bbox_inches='tight')
+        fig_lsd0r.savefig('lsd_zero_azi_r.png', bbox_inches='tight')
+        plt.close(fig_lsd0l)
+        plt.close(fig_lsd0r)
+    
+    # Calculating the average of each list
+    average_lsds_r_1d = sum(lsds_r_1d) / len(lsds_r_1d)
+    average_lsds_r_1d_11k = sum(lsds_r_1d_11k) / len(lsds_r_1d_11k)
+    average_lsds_l_1d = sum(lsds_l_1d) / len(lsds_l_1d)
+    average_lsds_l_1d_11k = sum(lsds_l_1d_11k) / len(lsds_l_1d_11k)
+
+    # Printing the averages with corresponding names
+    print(f"Average of lsds_r_1d: {average_lsds_r_1d}")
+    print(f"Average of lsds_r_1d_11k: {average_lsds_r_1d_11k}")
+    print(f"Average of lsds_l_1d: {average_lsds_l_1d}")
+    print(f"Average of lsds_l_1d_11k: {average_lsds_l_1d_11k}")
 
 
 def predict(models, curr_pred_data_list, inputs, outputs, idx, axsl, axsr, fs=44.1, lsd_only=False, C_hrir=None, mean_data=None):
@@ -959,10 +977,7 @@ def main():
                 axsr[i].grid(True)
 
             plt.show()
-            for i in plt.get_fignums():
-                plt.figure(i)
-                plt.savefig(f'figure{i}.png', bbox_inches='tight')
-            #plt.close()
+            fig.savefig(f'figure_{curr_idx}.png', bbox_inches='tight')
         
 
 if __name__ == '__main__':
