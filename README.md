@@ -185,21 +185,32 @@ Spatial masking and weighting. Rewrites `Network` as `tf.keras.Model` subclass w
 
 | Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
 |---|---|---|---|
-| cipic, lateral masking | **5.22 / 5.48 dB** | **4.30 / 4.67 dB** | `python main_network.py cipic all -a predict --tag Lateral_masked_1` |
-| cipic, lateral weighting | 6.08 / 5.58 dB | 4.37 / 4.11 dB | `python main_network.py cipic all -a predict --tag Lateral_weighted_1` |
-| cipic, left-right masking | 6.95 / 6.35 dB | 4.83 / 4.17 dB | `python main_network.py cipic all -a predict --tag Left_right_masked_1` |
-| cipic, left-right weighting | 6.02 / 5.35 dB | 4.36 / 3.73 dB | `python main_network.py cipic all -a predict --tag Left_right_weighted_1` |
-| cipic, left-right weighting reversed | 5.81 / 5.16 dB | 4.02 / 4.09 dB | `python main_network.py cipic all -a predict --tag Left_right_weighted_reversed_1` |
-| cipic, combined weighting | 6.09 / 6.20 dB | 4.08 / 4.50 dB | `python main_network.py cipic all -a predict --tag Combined_weighted` |
-| cipic, single point | 10.99 / 12.69 dB | 9.15 / 9.83 dB | `python main_network.py cipic all -a predict --tag Single_point` |
-| cipic, single area | 8.72 / 12.45 dB | 7.28 / 9.47 dB | `python main_network.py cipic all -a predict --tag Single_area` |
+| cipic, lateral masking (hard, zero-elev. ring \|z\|<0.01) | **5.22 / 5.48 dB** | **4.30 / 4.67 dB** | `python main_network.py cipic all -a predict --tag Lateral_masked_1` |
+| cipic, lateral weighting (soft, weight=1-\|z\|) | 6.08 / 5.58 dB | 4.37 / 4.11 dB | `python main_network.py cipic all -a predict --tag Lateral_weighted_1` |
+| cipic, left-right masking (hard, ipsilateral only) | 6.95 / 6.35 dB | 4.83 / 4.17 dB | `python main_network.py cipic all -a predict --tag Left_right_masked_1` |
+| cipic, left-right weighting (soft, linear ipsilateral) | 6.02 / 5.35 dB | 4.36 / 3.73 dB | `python main_network.py cipic all -a predict --tag Left_right_weighted_1` |
+| cipic, left-right weighting reversed (soft, linear contralateral) | 5.81 / 5.16 dB | 4.02 / 4.09 dB | `python main_network.py cipic all -a predict --tag Left_right_weighted_reversed_1` |
+| cipic, combined weighting (lateral × left-right) | 6.09 / 6.20 dB | 4.08 / 4.50 dB | `python main_network.py cipic all -a predict --tag Combined_weighted` |
+| cipic, single point masking (θ=52°, ϕ=63°) | 10.99 / 12.69 dB | 9.15 / 9.83 dB | `python main_network.py cipic all -a predict --tag Single_point` |
+| cipic, single area masking (θ=52°, ϕ=63°, τ=0.2) | 8.72 / 12.45 dB | 7.28 / 9.47 dB | `python main_network.py cipic all -a predict --tag Single_area` |
 | — | — | — | — |
-| Smoot Dec 2020 ‡, notch smoothing 1, left-right weighted | 5.54 / 6.08 dB | 3.51 / 4.16 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_1 -a predict --tag Left_right_weighted` |
-| Smoot Dec 2020 ‡, notch smoothing 2, left-right weighted | 5.37 / 5.86 dB | 3.54 / 4.16 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_2 -a predict --tag Left_right_weighted` |
-| Smoot Dec 2020 ‡, notch smoothing 3, left-right weighted | 6.08 / 5.73 dB | 4.08 / 4.60 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_3 -a predict --tag Left_right_weighted` |
-| Smoot Dec 2020 ‡, 5th ring 6, left-right weighted | 5.64 / 5.62 dB | 3.97 / 3.97 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t 5thring_6 -a predict --tag Left_right_weighted` |
+| Smoot Dec 2020 ‡, notch smoothing 1, left-right weighting | 5.54 / 6.08 dB | 3.51 / 4.16 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_1 -a predict --tag Left_right_weighted` |
+| Smoot Dec 2020 ‡, notch smoothing 2, left-right weighting | 5.37 / 5.86 dB | 3.54 / 4.16 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_2 -a predict --tag Left_right_weighted` |
+| Smoot Dec 2020 ‡, notch smoothing 3, left-right weighting | 6.08 / 5.73 dB | 4.08 / 4.60 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_3 -a predict --tag Left_right_weighted` |
+| Smoot Dec 2020 ‡, 5th ring 6, left-right weighting | 5.64 / 5.62 dB | 3.97 / 3.97 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t 5thring_6 -a predict --tag Left_right_weighted` |
 
 *‡ Smoot Dec 2020 (`cipic_latest_Smoot_Dec_2020`): smoothed CIPIC dataset variants*
+
+**Mask / weighting terminology:**
+- **Hard mask**: positions outside the target region contribute zero loss — the model only sees the masked subset during training.
+- **Soft / weighting**: all positions contribute, but target region gets a higher loss weight; the model still sees the full sphere.
+- **Zero-elevation ring** (`|z| < 0.01`): ~50 of 1250 positions lying on the horizontal equatorial plane (elevation ≈ 0°).
+- **`weight = 1 - |z|`**: equatorial positions get weight ≈ 1; polar positions get weight ≈ 0; intermediate positions are linearly interpolated.
+- **Ipsilateral**: same side as the ear being predicted — left ear trains on positions where y ≥ 0 (left hemisphere), right ear on y ≤ 0.
+- **Contralateral**: opposite hemisphere from the ear being predicted (reversed from above).
+- **Linear ipsilateral / contralateral**: weight declines linearly from 1 at the ipsilateral/contralateral extreme to 0 at the other side.
+- **θ=52°, ϕ=63°**: azimuth 52°, elevation 63° — roughly above-and-left of the subject (CIPIC position index 165/615 depending on the run).
+- **τ (tolerance)**: neighborhood radius in normalized Cartesian space around the target point; τ=0.2 includes a small area, τ=1e-5 is essentially a single point.
 
 ---
 
@@ -209,13 +220,22 @@ Single fully-connected network replaces the entire 4-stage pipeline. Same LSD, t
 
 | Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
 |---|---|---|---|
-| cipic, lateral masking | **5.84 / 5.86 dB** | **3.65 / 4.01 dB** | `python main_network.py cipic all -a predict --tag Lateral_mask_el=0` |
+| cipic, baseline (no masking, el=0) | **5.84 / 5.86 dB** | **3.65 / 4.01 dB** | `python main_network.py cipic all -a predict --tag Lateral_mask_el=0` |
 | — | — | — | — |
-| cipic, single point (pos 165, t=0.2) | 11.95 / 7.91 dB | 9.75 / 6.63 dB | `python main_network.py cipic all -a predict --tag "Center=165_t=0.2"` |
-| cipic, single point (pos 615, t=0.2) | 7.22 / 7.49 dB | 6.41 / 5.42 dB | `python main_network.py cipic all -a predict --tag "Center=615_t=0.2"` |
-| cipic, single point (pos 8, t=0.2) | 12.67 / 10.53 dB | 10.62 / 8.13 dB | `python main_network.py cipic all -a predict --tag "Center=8_t=0.2"` |
-| cipic, single point (pos 165, t=1e-5) | 11.23 / 10.14 dB | 9.08 / 7.99 dB | `python main_network.py cipic all -a predict --tag "Center=165_t=1e-5"` |
-| cipic, single point (pos 615, t=1e-5) | 9.18 / 10.35 dB | 6.94 / 7.51 dB | `python main_network.py cipic all -a predict --tag "Center=615_t=1e-5"` |
+| Smoot Dec 2020 ‡, notch smoothing 1, baseline | 5.62 / 5.42 dB | 3.75 / 3.99 dB | *(weights not saved — from thesis Table 3.5.7)* |
+| Smoot Dec 2020 ‡, notch smoothing 2, baseline | **5.11 / 5.51 dB** | **3.65 / 3.88 dB** | *(weights not saved — from thesis Table 3.5.7)* |
+| Smoot Dec 2020 ‡, notch smoothing 3, baseline | 5.39 / 5.58 dB | 3.83 / 4.23 dB | *(weights not saved — from thesis Table 3.5.7)* |
+| Smoot Dec 2020 ‡, 5th ring 6, baseline | 5.41 / 5.24 dB | 3.85 / 4.15 dB | *(weights not saved — from thesis Table 3.5.7)* |
+| — | — | — | — |
+| cipic, single point masking (θ=52°, ϕ=63°, τ=0.2) | 11.95 / 7.91 dB | 9.75 / 6.63 dB | `python main_network.py cipic all -a predict --tag "Center=165_t=0.2"` |
+| cipic, single point masking (θ=52°, ϕ=63°, τ=0.2, pos 615) | 7.22 / 7.49 dB | 6.41 / 5.42 dB | `python main_network.py cipic all -a predict --tag "Center=615_t=0.2"` |
+| cipic, single point masking (pos 8, τ=0.2) | 12.67 / 10.53 dB | 10.62 / 8.13 dB | `python main_network.py cipic all -a predict --tag "Center=8_t=0.2"` |
+| cipic, single point masking (pos 165, τ=1e-5) | 11.23 / 10.14 dB | 9.08 / 7.99 dB | `python main_network.py cipic all -a predict --tag "Center=165_t=1e-5"` |
+| cipic, single point masking (pos 615, τ=1e-5) | 9.18 / 10.35 dB | 6.94 / 7.51 dB | `python main_network.py cipic all -a predict --tag "Center=615_t=1e-5"` |
+
+*‡ Smoot Dec 2020 (`cipic_latest_Smoot_Dec_2020`): smoothed CIPIC dataset variants*
+
+**Single-point / area terminology:** pos N = CIPIC dataset position index; **τ (tolerance)** = neighborhood radius in normalized Cartesian space around the target point (τ=0.2 covers a small area, τ=1e-5 is a single point). See the `1.1.1` section above for full mask terminology.
 
 ---
 
