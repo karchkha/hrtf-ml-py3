@@ -209,10 +209,13 @@ Single fully-connected network replaces the entire 4-stage pipeline. Same LSD, t
 
 | Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
 |---|---|---|---|
-| cipic, lateral masking | 5.84 / 5.86 dB | 3.65 / 4.01 dB | `python main_network.py cipic all -a predict --tag Lateral_mask_el=0` |
-| cipic, single point (pos 165) | — | — | `python main_network.py cipic all -a predict --tag Center=165_t=0.2` |
-| cipic, single point (pos 615) | — | — | `python main_network.py cipic all -a predict --tag Center=615_t=0.2` |
-| cipic, single point (pos 8) | — | — | `python main_network.py cipic all -a predict --tag Center=8_t=0.2` |
+| cipic, lateral masking | **5.84 / 5.86 dB** | **3.65 / 4.01 dB** | `python main_network.py cipic all -a predict --tag Lateral_mask_el=0` |
+| — | — | — | — |
+| cipic, single point (pos 165, t=0.2) | 11.95 / 7.91 dB | 9.75 / 6.63 dB | `python main_network.py cipic all -a predict --tag "Center=165_t=0.2"` |
+| cipic, single point (pos 615, t=0.2) | 7.22 / 7.49 dB | 6.41 / 5.42 dB | `python main_network.py cipic all -a predict --tag "Center=615_t=0.2"` |
+| cipic, single point (pos 8, t=0.2) | 12.67 / 10.53 dB | 10.62 / 8.13 dB | `python main_network.py cipic all -a predict --tag "Center=8_t=0.2"` |
+| cipic, single point (pos 165, t=1e-5) | 11.23 / 10.14 dB | 9.08 / 7.99 dB | `python main_network.py cipic all -a predict --tag "Center=165_t=1e-5"` |
+| cipic, single point (pos 615, t=1e-5) | 9.18 / 10.35 dB | 6.94 / 7.51 dB | `python main_network.py cipic all -a predict --tag "Center=615_t=1e-5"` |
 
 ---
 
