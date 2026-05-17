@@ -171,7 +171,7 @@ LR scheduler experiment. Replaces fixed lr with `ReduceLROnPlateau` (halves on p
 | Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
 |---|---|---|---|
 | cipic, 0% dropout | 5.78 / 5.03 dB | 4.25 / 3.96 dB | `python main_network.py cipic all -a predict --tag Lr_0_001_reduce` |
-| cipic, 10% dropout | — | — | `python main_network.py cipic all -a predict --tag Lr_0_001_reduce_Dr01` |
+| cipic, 10% dropout | 5.43 / 5.36 dB | 3.75 / 3.80 dB | `python main_network.py cipic all -a predict --tag Lr_0_001_reduce_Dr01` |
 | cipic-corr-height †, 0% dropout | — | — | `python main_network.py cipic-corr-height all -a predict --tag Lr_0_001_reduce_Dr00` |
 | cipic-corr-height †, 10% dropout | — | — | `python main_network.py cipic-corr-height all -a predict --tag Lr_0_001_reduce_Dr01` |
 
