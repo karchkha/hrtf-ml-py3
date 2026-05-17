@@ -119,31 +119,24 @@ Pre-personalization baseline. Original stacked pipeline from Kestler et al. (201
 
 Main personalization branch. Adapts the stacked pipeline to generate HRTFs from anthropometrics alone. Adds `dropout` param; experiments across multiple dataset variants.
 
-**cipic / trunc_64**
-
-| Tag | Dropout | Full LSD (L/R) | <11k LSD (L/R) | Command |
-|---|---|---|---|---|
-| `Dr00-lr0005` | 0% | 5.84 / 5.49 dB | 3.98 / 4.40 dB | `python main_network.py cipic all -a predict --tag Dr00-lr0005` |
-| `Dr001_lr0005` | 1% | 5.97 / 4.99 dB | 4.11 / 3.77 dB | `python main_network.py cipic all -a predict --tag Dr001_lr0005` |
-| `Dr005_lr0005` | 5% | 5.39 / 5.31 dB | 3.58 / 3.54 dB | `python main_network.py cipic all -a predict --tag Dr005_lr0005` |
-| `Dr01_lr0005` | 10% | **5.33 / 5.13 dB** | **3.86 / 4.00 dB** | `python main_network.py cipic all -a predict --tag Dr01_lr0005` |
-| `Dr02_lr0005` | 20% | 5.50 / 5.52 dB | 3.94 / 4.11 dB | `python main_network.py cipic all -a predict --tag Dr02_lr0005` |
-
-**cipic-corr-height / trunc_64** — height & seated height (x14, x15) filled in for 2 subjects that had `nan` in the standard dataset
-
-| Tag | Dropout | Full LSD (L/R) | <11k LSD (L/R) | Command |
-|---|---|---|---|---|
-| `Dr00-lr0005` | 0% | 5.16 / 5.95 dB | 3.78 / 4.15 dB | `python main_network.py cipic-corr-height all -a predict --tag Dr00-lr0005` |
-| `Dr01_lr0005` | 10% | **4.94 / 5.65 dB** | **3.62 / 4.17 dB** | `python main_network.py cipic-corr-height all -a predict --tag Dr01_lr0005` |
-
-**cipic_latest_Smoot_Dec_2020** — smoothed CIPIC dataset variants, all no dropout (`Dr00-lr0005`)
-
-| `-t` | Full LSD (L/R) | <11k LSD (L/R) | Command |
+| Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
 |---|---|---|---|
-| `notch_smoothing_1` | 5.86 / 5.69 dB | 3.92 / 4.24 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_1 -a predict --tag Dr00-lr0005` |
-| `notch_smoothing_2` | 5.40 / 5.80 dB | 3.89 / 4.14 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_2 -a predict --tag Dr00-lr0005` |
-| `notch_smoothing_3` | 5.51 / 5.71 dB | 3.91 / 4.33 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_3 -a predict --tag Dr00-lr0005` |
-| `5thring_6` | 5.41 / 5.24 dB | 3.85 / 4.15 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t 5thring_6 -a predict --tag Dr00-lr0005` |
+| cipic, 0% dropout | 5.84 / 5.49 dB | 3.98 / 4.40 dB | `python main_network.py cipic all -a predict --tag Dr00-lr0005` |
+| cipic, 1% dropout | 5.97 / 4.99 dB | 4.11 / 3.77 dB | `python main_network.py cipic all -a predict --tag Dr001_lr0005` |
+| cipic, 5% dropout | 5.39 / 5.31 dB | 3.58 / 3.54 dB | `python main_network.py cipic all -a predict --tag Dr005_lr0005` |
+| cipic, 10% dropout | **5.33 / 5.13 dB** | **3.86 / 4.00 dB** | `python main_network.py cipic all -a predict --tag Dr01_lr0005` |
+| cipic, 20% dropout | 5.50 / 5.52 dB | 3.94 / 4.11 dB | `python main_network.py cipic all -a predict --tag Dr02_lr0005` |
+| — | — | — | — |
+| cipic-corr-height †, 0% dropout | 5.16 / 5.95 dB | 3.78 / 4.15 dB | `python main_network.py cipic-corr-height all -a predict --tag Dr00-lr0005` |
+| cipic-corr-height †, 10% dropout | **4.94 / 5.65 dB** | **3.62 / 4.17 dB** | `python main_network.py cipic-corr-height all -a predict --tag Dr01_lr0005` |
+| — | — | — | — |
+| Smoot Dec 2020 ‡, notch smoothing 1 | 5.86 / 5.69 dB | 3.92 / 4.24 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_1 -a predict --tag Dr00-lr0005` |
+| Smoot Dec 2020 ‡, notch smoothing 2 | 5.40 / 5.80 dB | 3.89 / 4.14 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_2 -a predict --tag Dr00-lr0005` |
+| Smoot Dec 2020 ‡, notch smoothing 3 | 5.51 / 5.71 dB | 3.91 / 4.33 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_3 -a predict --tag Dr00-lr0005` |
+| Smoot Dec 2020 ‡, 5th ring 6 | 5.41 / 5.24 dB | 3.85 / 4.15 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t 5thring_6 -a predict --tag Dr00-lr0005` |
+
+*† cipic-corr-height: same as cipic but with height & seated height (x14, x15) filled in for 2 subjects that had `nan`*  
+*‡ Smoot Dec 2020 (`cipic_latest_Smoot_Dec_2020`): smoothed CIPIC dataset variants, all run with 0% dropout*
 
 ---
 
@@ -151,10 +144,10 @@ Main personalization branch. Adapts the stacked pipeline to generate HRTFs from 
 
 Removes height & seated height (x14, x15) from head inputs — `np.delete(head_local, [13, 14])`, 15 head params instead of 17.
 
-| Tag | Dropout | Full LSD (L/R) | <11k LSD (L/R) | Command |
-|---|---|---|---|---|
-| `Dr00-lr0005` | 0% | ~5.1 dB | — | `python main_network.py cipic all -a predict --tag Dr00-lr0005` |
-| `Dr01_lr0005_removed_high` | 10% | — | — | `python main_network.py cipic all -a predict --tag Dr01_lr0005_removed_high` |
+| Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
+|---|---|---|---|
+| 0% dropout | ~5.1 dB | — | `python main_network.py cipic all -a predict --tag Dr00-lr0005` |
+| 10% dropout | — | — | `python main_network.py cipic all -a predict --tag Dr01_lr0005_removed_high` |
 
 ---
 
@@ -172,14 +165,14 @@ LR scheduler experiment. Replaces fixed lr with `ReduceLROnPlateau` (halves on p
 
 Spatial masking and weighting. Rewrites `Network` as `tf.keras.Model` subclass with custom `train_step` and `mask_loss()`.
 
-| Tag | Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
-|---|---|---|---|---|
-| `Lateral_masked_1` | lateral masking | ~5.2 dB | — | `python main_network.py cipic all -a predict --tag Lateral_masked_1` |
-| `Lateral_weighted_1` | lateral weighting | — | — | `python main_network.py cipic all -a predict --tag Lateral_weighted_1` |
-| `Left_right_masked_1` | left-right masking | — | — | `python main_network.py cipic all -a predict --tag Left_right_masked_1` |
-| `Left_right_weighted_1` | left-right weighting | — | — | `python main_network.py cipic all -a predict --tag Left_right_weighted_1` |
-| `Single_point` | single point | — | — | `python main_network.py cipic all -a predict --tag Single_point` |
-| `Single_area` | single area | — | — | `python main_network.py cipic all -a predict --tag Single_area` |
+| Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
+|---|---|---|---|
+| lateral masking | ~5.2 dB | — | `python main_network.py cipic all -a predict --tag Lateral_masked_1` |
+| lateral weighting | — | — | `python main_network.py cipic all -a predict --tag Lateral_weighted_1` |
+| left-right masking | — | — | `python main_network.py cipic all -a predict --tag Left_right_masked_1` |
+| left-right weighting | — | — | `python main_network.py cipic all -a predict --tag Left_right_weighted_1` |
+| single point | — | — | `python main_network.py cipic all -a predict --tag Single_point` |
+| single area | — | — | `python main_network.py cipic all -a predict --tag Single_area` |
 
 ---
 
@@ -187,12 +180,12 @@ Spatial masking and weighting. Rewrites `Network` as `tf.keras.Model` subclass w
 
 Single fully-connected network replaces the entire 4-stage pipeline. Same LSD, trains in ~1 hr instead of 12+. Also includes single-point/area experiments from `1.1.1`.
 
-| Tag | Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
-|---|---|---|---|---|
-| `Lateral_mask_el=0` | lateral masking | 5.84 / 5.86 dB | 3.65 / 4.01 dB | `python main_network.py cipic all -a predict --tag Lateral_mask_el=0` |
-| `Center=165_t=0.2` | single point (pos 165) | — | — | `python main_network.py cipic all -a predict --tag Center=165_t=0.2` |
-| `Center=615_t=0.2` | single point (pos 615) | — | — | `python main_network.py cipic all -a predict --tag Center=615_t=0.2` |
-| `Center=8_t=0.2` | single point (pos 8) | — | — | `python main_network.py cipic all -a predict --tag Center=8_t=0.2` |
+| Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
+|---|---|---|---|
+| lateral masking | 5.84 / 5.86 dB | 3.65 / 4.01 dB | `python main_network.py cipic all -a predict --tag Lateral_mask_el=0` |
+| single point (pos 165) | — | — | `python main_network.py cipic all -a predict --tag Center=165_t=0.2` |
+| single point (pos 615) | — | — | `python main_network.py cipic all -a predict --tag Center=615_t=0.2` |
+| single point (pos 8) | — | — | `python main_network.py cipic all -a predict --tag Center=8_t=0.2` |
 
 ---
 
