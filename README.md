@@ -181,16 +181,25 @@ LR scheduler experiment. Replaces fixed lr with `ReduceLROnPlateau` (halves on p
 
 #### `personalization-1.1.1`
 
-Spatial masking and weighting. Rewrites `Network` as `tf.keras.Model` subclass with custom `train_step` and `mask_loss()`.
+Spatial masking and weighting. Rewrites `Network` as `tf.keras.Model` subclass with custom `train_step` and `mask_loss()`. All runs use cipic with 0% dropout unless noted.
 
 | Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
 |---|---|---|---|
-| lateral masking | ~5.2 dB | — | `python main_network.py cipic all -a predict --tag Lateral_masked_1` |
-| lateral weighting | — | — | `python main_network.py cipic all -a predict --tag Lateral_weighted_1` |
-| left-right masking | — | — | `python main_network.py cipic all -a predict --tag Left_right_masked_1` |
-| left-right weighting | — | — | `python main_network.py cipic all -a predict --tag Left_right_weighted_1` |
-| single point | — | — | `python main_network.py cipic all -a predict --tag Single_point` |
-| single area | — | — | `python main_network.py cipic all -a predict --tag Single_area` |
+| cipic, lateral masking | **5.22 / 5.48 dB** | **4.30 / 4.67 dB** | `python main_network.py cipic all -a predict --tag Lateral_masked_1` |
+| cipic, lateral weighting | 6.08 / 5.58 dB | 4.37 / 4.11 dB | `python main_network.py cipic all -a predict --tag Lateral_weighted_1` |
+| cipic, left-right masking | 6.95 / 6.35 dB | 4.83 / 4.17 dB | `python main_network.py cipic all -a predict --tag Left_right_masked_1` |
+| cipic, left-right weighting | 6.02 / 5.35 dB | 4.36 / 3.73 dB | `python main_network.py cipic all -a predict --tag Left_right_weighted_1` |
+| cipic, left-right weighting reversed | 5.81 / 5.16 dB | 4.02 / 4.09 dB | `python main_network.py cipic all -a predict --tag Left_right_weighted_reversed_1` |
+| cipic, combined weighting | 6.09 / 6.20 dB | 4.08 / 4.50 dB | `python main_network.py cipic all -a predict --tag Combined_weighted` |
+| cipic, single point | 10.99 / 12.69 dB | 9.15 / 9.83 dB | `python main_network.py cipic all -a predict --tag Single_point` |
+| cipic, single area | 8.72 / 12.45 dB | 7.28 / 9.47 dB | `python main_network.py cipic all -a predict --tag Single_area` |
+| — | — | — | — |
+| Smoot Dec 2020 ‡, notch smoothing 1, left-right weighted | 5.54 / 6.08 dB | 3.51 / 4.16 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_1 -a predict --tag Left_right_weighted` |
+| Smoot Dec 2020 ‡, notch smoothing 2, left-right weighted | 5.37 / 5.86 dB | 3.54 / 4.16 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_2 -a predict --tag Left_right_weighted` |
+| Smoot Dec 2020 ‡, notch smoothing 3, left-right weighted | 6.08 / 5.73 dB | 4.08 / 4.60 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_3 -a predict --tag Left_right_weighted` |
+| Smoot Dec 2020 ‡, 5th ring 6, left-right weighted | 5.64 / 5.62 dB | 3.97 / 3.97 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t 5thring_6 -a predict --tag Left_right_weighted` |
+
+*‡ Smoot Dec 2020 (`cipic_latest_Smoot_Dec_2020`): smoothed CIPIC dataset variants*
 
 ---
 
@@ -200,10 +209,10 @@ Single fully-connected network replaces the entire 4-stage pipeline. Same LSD, t
 
 | Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
 |---|---|---|---|
-| lateral masking | 5.84 / 5.86 dB | 3.65 / 4.01 dB | `python main_network.py cipic all -a predict --tag Lateral_mask_el=0` |
-| single point (pos 165) | — | — | `python main_network.py cipic all -a predict --tag Center=165_t=0.2` |
-| single point (pos 615) | — | — | `python main_network.py cipic all -a predict --tag Center=615_t=0.2` |
-| single point (pos 8) | — | — | `python main_network.py cipic all -a predict --tag Center=8_t=0.2` |
+| cipic, lateral masking | 5.84 / 5.86 dB | 3.65 / 4.01 dB | `python main_network.py cipic all -a predict --tag Lateral_mask_el=0` |
+| cipic, single point (pos 165) | — | — | `python main_network.py cipic all -a predict --tag Center=165_t=0.2` |
+| cipic, single point (pos 615) | — | — | `python main_network.py cipic all -a predict --tag Center=615_t=0.2` |
+| cipic, single point (pos 8) | — | — | `python main_network.py cipic all -a predict --tag Center=8_t=0.2` |
 
 ---
 
