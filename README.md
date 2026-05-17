@@ -142,12 +142,25 @@ Main personalization branch. Adapts the stacked pipeline to generate HRTFs from 
 
 #### `personalization-1.0.1`
 
-Removes height & seated height (x14, x15) from head inputs — `np.delete(head_local, [13, 14])`, 15 head params instead of 17.
+Removes height & seated height (x14, x15) from head inputs — `np.delete(head_local, [13, 14])`, 15 head params instead of 17. Same dataset variants as `1.0.0`.
 
 | Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
 |---|---|---|---|
-| 0% dropout | ~5.1 dB | — | `python main_network.py cipic all -a predict --tag Dr00-lr0005` |
-| 10% dropout | — | — | `python main_network.py cipic all -a predict --tag Dr01_lr0005_removed_high` |
+| cipic, 0% dropout | 6.32 / 5.58 dB | 4.13 / 4.48 dB | `python main_network.py cipic all -a predict --tag Dr00-lr0005` |
+| cipic, 10% dropout | 5.23 / 5.98 dB | 3.74 / 4.45 dB | `python main_network.py cipic all -a predict --tag Dr01_lr0005_removed_high` |
+| — | — | — | — |
+| cipic-corr-height †, 0% dropout | 5.44 / 5.64 dB | 4.14 / 4.00 dB | `python main_network.py cipic-corr-height all -a predict --tag Dr00-lr0005` |
+| cipic-corr-height †, 10% dropout | **5.17 / 5.24 dB** | **3.71 / 4.02 dB** | `python main_network.py cipic-corr-height all -a predict --tag Dr01_lr0005_removed_high` |
+| — | — | — | — |
+| Smoot Dec 2020 ‡, notch smoothing 1 | 5.68 / 5.81 dB | 3.84 / 4.24 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_1 -a predict --tag Dr00-lr0005` |
+| Smoot Dec 2020 ‡, notch smoothing 2 | 6.46 / 5.77 dB | 3.76 / 4.45 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_2 -a predict --tag Dr00-lr0005` |
+| Smoot Dec 2020 ‡, notch smoothing 3 | 6.10 / 5.38 dB | 3.84 / 4.16 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t notch_smoothing_3 -a predict --tag Dr00-lr0005` |
+| Smoot Dec 2020 ‡, 5th ring 6 | 5.57 / 5.86 dB | 3.95 / 4.37 dB | `python main_network.py cipic_latest_Smoot_Dec_2020 all -t 5thring_6 -a predict --tag Dr00-lr0005` |
+
+*† cipic-corr-height: same as cipic but with height & seated height (x14, x15) filled in for 2 subjects that had `nan`*  
+*‡ Smoot Dec 2020 (`cipic_latest_Smoot_Dec_2020`): smoothed CIPIC dataset variants, all run with 0% dropout*
+
+> **Purpose of cipic vs cipic-corr-height here:** These two datasets enable a clean cross-branch comparison of the effect of removing height. Subjects with `nan` are dropped before the column deletion, so the same subjects appear in both branches for each dataset: **cipic trains on 36 subjects** on both `1.0.0` and `1.0.1`, and **cipic-corr-height trains on 38 subjects** on both branches. Comparing `1.0.0` vs `1.0.1` within the same dataset isolates the effect of removing height with no change in training subjects.
 
 ---
 
