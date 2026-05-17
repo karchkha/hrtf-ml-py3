@@ -166,11 +166,16 @@ Removes height & seated height (x14, x15) from head inputs — `np.delete(head_l
 
 #### `personalization-1.0.2`
 
-LR scheduler experiment. Replaces fixed lr with `ReduceLROnPlateau` (halves on plateau). lr=0.001, iterations=1, epochs=400. *(retrain needed — no saved weights)*
+LR scheduler experiment. Replaces fixed lr with `ReduceLROnPlateau` (halves on plateau). lr=0.001, iterations=1, epochs=400.
 
-| Full LSD (L/R) | <11k LSD (L/R) |
-|---|---|
-| 5.78 / 5.03 dB | 4.25 / 3.96 dB |
+| Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
+|---|---|---|---|
+| cipic, 0% dropout | 5.78 / 5.03 dB | 4.25 / 3.96 dB | `python main_network.py cipic all -a predict --tag Lr_0_001_reduce` |
+| cipic, 10% dropout | — | — | `python main_network.py cipic all -a predict --tag Lr_0_001_reduce_Dr01` |
+| cipic-corr-height †, 0% dropout | — | — | `python main_network.py cipic-corr-height all -a predict --tag Lr_0_001_reduce_Dr00` |
+| cipic-corr-height †, 10% dropout | — | — | `python main_network.py cipic-corr-height all -a predict --tag Lr_0_001_reduce_Dr01` |
+
+*† cipic-corr-height: same as cipic but with height & seated height (x14, x15) filled in for 2 subjects that had `nan`*
 
 ---
 
