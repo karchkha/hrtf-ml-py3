@@ -172,8 +172,8 @@ LR scheduler experiment. Replaces fixed lr with `ReduceLROnPlateau` (halves on p
 |---|---|---|---|
 | cipic, 0% dropout | 5.78 / 5.03 dB | 4.25 / 3.96 dB | `python main_network.py cipic all -a predict --tag Lr_0_001_reduce` |
 | cipic, 10% dropout | 5.43 / 5.36 dB | 3.75 / 3.80 dB | `python main_network.py cipic all -a predict --tag Lr_0_001_reduce_Dr01` |
-| cipic-corr-height †, 0% dropout | — | — | `python main_network.py cipic-corr-height all -a predict --tag Lr_0_001_reduce_Dr00` |
-| cipic-corr-height †, 10% dropout | — | — | `python main_network.py cipic-corr-height all -a predict --tag Lr_0_001_reduce_Dr01` |
+| cipic-corr-height †, 0% dropout | 5.67 / 5.60 dB | 3.80 / 3.82 dB | `python main_network.py cipic-corr-height all -a predict --tag Lr_0_001_reduce_Dr00` |
+| cipic-corr-height †, 10% dropout | **5.24 / 5.24 dB** | **3.79 / 3.74 dB** | `python main_network.py cipic-corr-height all -a predict --tag Lr_0_001_reduce_Dr01` |
 
 *† cipic-corr-height: same as cipic but with height & seated height (x14, x15) filled in for 2 subjects that had `nan`*
 
