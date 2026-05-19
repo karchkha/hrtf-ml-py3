@@ -1,8 +1,8 @@
 branch = 'only_magtotal_fully_connected'
 # this branch is for testing and experimenting with loss function on with different types of masking ans weighting
 # uses tf.keras.model to speed up training
-iterations = 100
-epochs = 100
+iterations = 20
+epochs = 20
 maglr_iterations = 25
 maglr_epochs = 25
 #50 points for cipic
@@ -15,12 +15,12 @@ num_valid_points = int(round(percent_valid_points*points_per_ring,1))
 test_seed = 0
 validation_seed = 100
 batch_size = 32
-dropout = 0.0
+dropout = 0.1
 remove_mean = False
 initial_lr = 0.001 #0.0005
 mask_type = None #"left_right_weighted" # "combined_weighted" # "lateral_masked" #  "lateral_weighted" # "left_right_masked" # "left_right_weighted" # "left_right_weighted_reverted" # "single_point" # single_area #
 center = [8]
-# [8, 58, 108, 158, 208, 258, 308, 358, 408, 458, 508, 558, 608, 658,
+# center = [8, 58, 108, 158, 208, 258, 308, 358, 408, 458, 508, 558, 608, 658,
 #            708, 758, 808, 858, 908, 958, 1008, 1058, 1108, 1158, 1208, 1240,
 #            1190, 1140, 1090, 1040, 990, 940, 890, 840, 790, 740, 690, 640,
 #            590, 540, 490, 440, 390, 340, 290, 240, 190, 140, 90, 40]

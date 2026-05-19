@@ -299,9 +299,13 @@ class NetworkMagTotal(Network):
 
         # Increased model complexity
         x = Dense(1024, activation='relu', kernel_initializer='he_uniform')(concatenated)
+        x = Dropout(self.dropout)(x)
         x = Dense(512, activation='relu', kernel_initializer='he_uniform')(x)
+        x = Dropout(self.dropout)(x)
         x = Dense(256, activation='relu', kernel_initializer='he_uniform')(x)
+        x = Dropout(self.dropout)(x)
         x = Dense(128, activation='relu', kernel_initializer='he_uniform')(x)
+        x = Dropout(self.dropout)(x)
 
         # Output branches for the model
         # Adjust the number of neurons in the output layers and activation functions as necessary

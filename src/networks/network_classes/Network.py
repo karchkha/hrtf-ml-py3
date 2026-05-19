@@ -43,7 +43,8 @@ class Network(tf.keras.Model):
         super(Network, self).__init__()
 
         self.center = center
-        self.tolerance = tolerance          
+        self.tolerance = tolerance
+        self.dropout = dropout
 
         self.output_names = output_names
         self.loss_weights = loss_weights
@@ -253,8 +254,9 @@ class Network(tf.keras.Model):
         self.validation = (in_valid_dict, out_valid_dict)
 
 
-        self.training = self.filter_data_by_matching_indexes(self.training, self.center, tolerance = self.tolerance)
-        self.validation = self.filter_data_by_matching_indexes(self.validation, self.center, tolerance = self.tolerance)
+        if self.mask_type in ["single_point", "single_area"]:
+            self.training = self.filter_data_by_matching_indexes(self.training, self.center, tolerance = self.tolerance)
+            self.validation = self.filter_data_by_matching_indexes(self.validation, self.center, tolerance = self.tolerance)
         
     def set_test_inputs_outputs(self):
         print ("Setting test data")
@@ -278,7 +280,8 @@ class Network(tf.keras.Model):
         self.test = (in_test_dict, out_test_dict)
 
 
-        self.test = self.filter_data_by_matching_indexes(self.test, self.center, tolerance = self.tolerance)
+        if self.mask_type in ["single_point", "single_area"]:
+            self.test = self.filter_data_by_matching_indexes(self.test, self.center, tolerance = self.tolerance)
 
     def get_loss(self, in_dict, out_dict):
         outputs = self.model.predict(in_dict)
