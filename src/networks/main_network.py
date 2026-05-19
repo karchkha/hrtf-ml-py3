@@ -127,85 +127,68 @@ def predict_all_lsd(all_models, inputs, all_outputs, fs=44.1, names=[], args=Non
             outputs = all_outputs['C_' + name]
         else: 
             outputs = all_outputs[name]
-        lsds_l_11k_test = []
-        lsds_r_11k_test = []
-        lsds_l_test = []
-        lsds_r_test = []
-        lsds_l = []
-        lsds_r = []
-        lsds_l = np.zeros((num_rows, num_cols))
-        lsds_r = np.zeros((num_rows, num_cols))
+        lsds_l     = np.zeros((num_rows, num_cols))
+        lsds_r     = np.zeros((num_rows, num_cols))
         lsds_l_11k = np.zeros((num_rows, num_cols))
         lsds_r_11k = np.zeros((num_rows, num_cols))
+        lsds_l_test = []
+        lsds_r_test = []
+        lsds_l_11k_test = []
+        lsds_r_11k_test = []
         high_idxs_l = {}
         high_idxs_r = {}
         thresh = 5.0
-        for i in range(0, num_cols):
-            for j in range(0, num_rows):
-                idx = lsd_offset + i*num_rows + j
-                curr_input_pos = np.array(pos_inputs[idx]).T
-                curr_input_head = np.array(head_inputs[idx]).T
-                curr_input_ear_l = np.expand_dims(np.array(ear_inputs[idx,:,0]), axis=0)
-                curr_input_ear_r = np.expand_dims(np.array(ear_inputs[idx,:,1]), axis=0)
-                length = 32
-                if name  in ['magl']:
-                    model = all_models[name]
-                    pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l], verbose=0)
 
-                    if mean_data is not None:
-                        pred_data[0] = pred_data[0] + mean_data[idx][:,0]
+        all_block_idxs = np.arange(lsd_offset, lsd_offset + num_rows * num_cols)
+        batch_pos   = np.array(pos_inputs[all_block_idxs])
+        batch_head  = np.array(head_inputs[all_block_idxs])
+        batch_ear_l = np.array(ear_inputs[all_block_idxs, :, 0])
+        batch_ear_r = np.array(ear_inputs[all_block_idxs, :, 1])
 
-                    curr_pred_data = pred_data[0]
-                    left_right = [True, False]
-                elif name  in ['maglmean']:
-                    # The code for maglmean is not completed - as the input needs to be adjusted as well
-                    model = all_models['magl']
-                    pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l], verbose=0)
-                    curr_pred_data = pred_data[1]
-                    left_right = [True, False]
-                    lsd_0_azi = False
-                elif name in ['magr']:
-                    model = all_models[name]
-                    pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_r], verbose=0)
+        if name in ['magl']:
+            model = all_models[name]
+            batch_pred = model.model.predict([batch_pos, batch_head, batch_ear_l], verbose=0)
+            if mean_data is not None:
+                batch_pred[0] += mean_data[all_block_idxs, :, 0]
+            pred_l = batch_pred[0]
+            left_right = [True, False]
+        elif name in ['maglmean']:
+            model = all_models['magl']
+            batch_pred = model.model.predict([batch_pos, batch_head, batch_ear_l], verbose=0)
+            pred_l = batch_pred[1]
+            left_right = [True, False]
+            lsd_0_azi = False
+        elif name in ['magr']:
+            model = all_models[name]
+            batch_pred = model.model.predict([batch_pos, batch_head, batch_ear_r], verbose=0)
+            if mean_data is not None:
+                batch_pred[0] += mean_data[all_block_idxs, :, 1]
+            pred_r = batch_pred[0]
+            left_right = [False, True]
+        else:
+            model = all_models[name]
+            batch_pred = model.model.predict([batch_pos, batch_head, batch_ear_l, batch_ear_r], verbose=0)
+            if name not in ["real", "imag", "magri", "mag", "magfinal", "realmean", "realstd", "imagmean", "imagstd"]:
+                if mean_data is not None:
+                    batch_pred[0] += mean_data[all_block_idxs, :, 0]
+                    batch_pred[1] += mean_data[all_block_idxs, :, 1]
+            pred_l = batch_pred[0]
+            pred_r = batch_pred[1]
+            left_right = [True, True]
 
-                    if mean_data is not None:
-                        pred_data[0] = pred_data[0] + mean_data[idx][:,1]
+        if left_right[0]:
+            lsds_l_flat     = np.sqrt(np.mean((outputs[all_block_idxs, :32, 0] - pred_l[:, :32]) ** 2, axis=-1))
+            lsds_l_11k_flat = np.sqrt(np.mean((outputs[all_block_idxs, :18, 0] - pred_l[:, :18]) ** 2, axis=-1))
+            lsds_l     = lsds_l_flat.reshape(num_cols, num_rows).T
+            lsds_l_11k = lsds_l_11k_flat.reshape(num_cols, num_rows).T
+            high_idxs_l = {int(lsd_offset + k): lsds_l_flat[k] for k in np.where(lsds_l_flat > thresh)[0]}
 
-                    curr_pred_data = pred_data[0]
-                    left_right = [False, True]
-                else:
-                    model = all_models[name]
-                    curr_pred_data = model.model.predict([curr_input_pos, curr_input_head, curr_input_ear_l, curr_input_ear_r], verbose=0)
-                    
-                    # print(curr_pred_data)
-                    if name not in ["real", "imag", "magri", "mag", "magfinal", "realmean",  "realstd", "imagmean", "imagstd"]:
-                        if mean_data is not None:
-                            curr_pred_data[0] = curr_pred_data[0] + mean_data[idx][:,0]
-                            curr_pred_data[1] = curr_pred_data[1] + mean_data[idx][:,1]
-
-                    left_right = [True, True]
-                if left_right[0]:
-                    lsds_l[j, i] = lsd(outputs[idx,:,0], curr_pred_data[0])
-                    lsds_l_11k[j, i] = lsd(outputs[idx,:,0], curr_pred_data[0], 18)
-                    if (lsds_l[j, i] > thresh):
-                        high_idxs_l[idx] = lsds_l[j,i]
-                    if left_right[1]:
-                        lsds_r[j, i] = lsd(outputs[idx,:,1], curr_pred_data[1])
-                        lsds_r_11k[j, i] = lsd(outputs[idx,:,1], curr_pred_data[1], 18)
-                        if (lsds_r[j, i] > thresh):
-                            high_idxs_r[idx] = lsds_r[j,i]
-                elif left_right[1]:
-                    lsds_r[j, i] = lsd(outputs[idx,:,1], curr_pred_data[0])
-                    lsds_r_11k[j, i] = lsd(outputs[idx,:,1], curr_pred_data[0], 18)
-                    if (lsds_r[j, i] > thresh):
-                        high_idxs_r[idx] = lsds_r[j,i]
-                # if idx in test_idxs:
-                #     if left_right[0]:
-                #         lsds_l_test.append(lsd(outputs[idx,:,0], curr_pred_data[0]))
-                #         lsds_l_11k_test.append(lsd(outputs[idx,:,0], curr_pred_data[0], 18))
-                #     if left_right[1]:
-                #         lsds_r_test.append(lsd(outputs[idx,:,1], curr_pred_data[1]))
-                #         lsds_r_11k_test.append(lsd(outputs[idx,:,1], curr_pred_data[1], 18))
+        if left_right[1]:
+            lsds_r_flat     = np.sqrt(np.mean((outputs[all_block_idxs, :32, 1] - pred_r[:, :32]) ** 2, axis=-1))
+            lsds_r_11k_flat = np.sqrt(np.mean((outputs[all_block_idxs, :18, 1] - pred_r[:, :18]) ** 2, axis=-1))
+            lsds_r     = lsds_r_flat.reshape(num_cols, num_rows).T
+            lsds_r_11k = lsds_r_11k_flat.reshape(num_cols, num_rows).T
+            high_idxs_r = {int(lsd_offset + k): lsds_r_flat[k] for k in np.where(lsds_r_flat > thresh)[0]}
         #fig_lsdall_l = plt.figure()
         #fig_lsdall_l_11k = plt.figure()
         #fig_lsdall_r = plt.figure()
