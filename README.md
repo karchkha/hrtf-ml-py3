@@ -220,12 +220,12 @@ Single fully-connected network replaces the entire 4-stage pipeline. Same LSD, t
 
 | Experiment | Full LSD (L/R) | <11k LSD (L/R) | Command |
 |---|---|---|---|
-| cipic, 0% dropout (Dr00) | 5.18 / 5.33 dB | 3.47 / 3.77 dB | `python main_network.py cipic all -a predict --tag Dr00` |
+| cipic, 0% dropout (Dr00) | **5.18 / 5.33 dB** | **3.47 / 3.77 dB** | `python main_network.py cipic all -a predict --tag Dr00` |
 | cipic, 10% dropout (Dr01) | 5.41 / 5.79 dB | 3.53 / 4.08 dB | `python main_network.py cipic all -a predict --tag Dr01` |
 | cipic-corr-height †, 0% dropout (Dr00) | 5.52 / 5.39 dB | 3.62 / 4.03 dB | `python main_network.py cipic-corr-height all -a predict --tag Dr00` |
-| cipic-corr-height †, 10% dropout (Dr01) | **5.15 / 5.42 dB** | **3.50 / 4.04 dB** | `python main_network.py cipic-corr-height all -a predict --tag Dr01` |
+| cipic-corr-height †, 10% dropout (Dr01) | 5.15 / 5.42 dB | 3.50 / 4.04 dB | `python main_network.py cipic-corr-height all -a predict --tag Dr01` |
 | — | — | — | — |
-| cipic, el=0 baseline (old code, center=[8]) | 5.79 / 6.15 dB | 4.20 / 4.75 dB | `python main_network.py cipic all -a predict --tag Lateral_mask_el=0` |
+| cipic, el=0 baseline (center=center ring) | 5.79 / 6.15 dB | 4.20 / 4.75 dB | `python main_network.py cipic all -a predict --tag Lateral_mask_el=0` |
 | — | — | — | — |
 | Smoot Dec 2020 ‡, notch smoothing 1, baseline | 5.62 / 5.42 dB | 3.75 / 3.99 dB | *(weights not saved — from thesis Table 3.5.7)* |
 | Smoot Dec 2020 ‡, notch smoothing 2, baseline | **5.11 / 5.51 dB** | **3.65 / 3.88 dB** | *(weights not saved — from thesis Table 3.5.7)* |
