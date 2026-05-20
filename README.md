@@ -76,6 +76,20 @@ conda activate hrtf
 pip install -r requirements.txt
 ```
 
+## Pretrained Models
+
+Trained model weights are available on Zenodo: **[https://doi.org/10.5281/zenodo.20301966](https://doi.org/10.5281/zenodo.20301966)**
+
+Download and extract:
+
+```bash
+wget https://zenodo.org/records/20301966/files/hrtf_models.tar.gz
+tar -xzf hrtf_models.tar.gz -C src/networks/
+rm hrtf_models.tar.gz
+```
+
+The archive contains `kmodels/` (full Keras models), `weights/` (best-checkpoint weights), `mse/` and `val_loss/` (training loss curves). See the Branch Map section below for which tag corresponds to which experiment.
+
 ## Branch Map
 
 ### Running training and prediction
